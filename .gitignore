@@ -1,0 +1,10 @@
+.venv/
+__pycache__/
+.secretos/
+estado/
+local/registros/
+local/*.db
+local/*.db-*
+*.db
+.pytest_cache/
+informe/*.docx

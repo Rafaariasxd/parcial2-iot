@@ -1,0 +1,233 @@
+{
+  "granja": {
+    "nombre": "Granja avícola - Galpón de ponedoras",
+    "ubicacion": "Santander, Colombia",
+    "latitud": 7.13,
+    "longitud": -73.21,
+    "aves": 4800,
+    "linea": "Hy-Line Brown",
+    "semana_edad": 40
+  },
+  "acciones_comunes": ["apagar", "encender", "intervalo", "calibrar", "reiniciar_calibracion"],
+  "dispositivos": [
+    {
+      "id": "galpon1-ambiente",
+      "nombre": "Ambiente galpón 1",
+      "categoria": "Gemelo digital",
+      "origen": "Python (gemelo del galpón)",
+      "protocolo": "MQTT",
+      "ubicacion": "Galpón 1",
+      "descripcion": "Temperatura y humedad dentro del galpón. Depende del clima exterior real y de la ventilación.",
+      "variables": {
+        "temperatura": {"unidad": "°C", "min": 15, "max": 40},
+        "humedad": {"unidad": "%", "min": 30, "max": 100},
+        "indice_thi": {"unidad": "", "min": 60, "max": 90}
+      },
+      "acciones": []
+    },
+    {
+      "id": "galpon1-gases",
+      "nombre": "Gases galpón 1",
+      "categoria": "Gemelo digital",
+      "origen": "Python (gemelo del galpón)",
+      "protocolo": "MQTT",
+      "ubicacion": "Galpón 1",
+      "descripcion": "Amoníaco de la gallinaza y CO2 de la respiración de las aves. Bajan con la ventilación.",
+      "variables": {
+        "amoniaco": {"unidad": "ppm", "min": 0, "max": 60},
+        "co2": {"unidad": "ppm", "min": 400, "max": 5000}
+      },
+      "acciones": []
+    },
+    {
+      "id": "galpon1-ventilacion",
+      "nombre": "Ventiladores galpón 1",
+      "categoria": "Gemelo digital",
+      "origen": "Python (gemelo del galpón)",
+      "protocolo": "MQTT",
+      "ubicacion": "Galpón 1",
+      "descripcion": "Extractores con modo automático por temperatura o velocidad manual.",
+      "variables": {
+        "velocidad": {"unidad": "%", "min": 0, "max": 100},
+        "modo_auto": {"unidad": "1/0", "min": 0, "max": 1},
+        "potencia": {"unidad": "kW", "min": 0, "max": 2}
+      },
+      "acciones": ["velocidad", "modo"]
+    },
+    {
+      "id": "galpon1-iluminacion",
+      "nombre": "Iluminación galpón 1",
+      "categoria": "Gemelo digital",
+      "origen": "Python (gemelo del galpón)",
+      "protocolo": "MQTT sobre WebSockets",
+      "ubicacion": "Galpón 1",
+      "descripcion": "Programa de luz de 16 horas para postura y luz natural que entra al galpón.",
+      "variables": {
+        "luz": {"unidad": "lux", "min": 0, "max": 400},
+        "luces": {"unidad": "1/0", "min": 0, "max": 1},
+        "horas_luz": {"unidad": "h", "min": 0, "max": 24}
+      },
+      "acciones": ["horario", "forzar"]
+    },
+    {
+      "id": "tanque-agua",
+      "nombre": "Tanque de agua",
+      "categoria": "Gemelo digital",
+      "origen": "Python (gemelo del galpón)",
+      "protocolo": "MQTT sobre WebSockets",
+      "ubicacion": "Tanque elevado",
+      "descripcion": "Nivel del tanque de 5.000 L, caudal hacia los bebederos y bomba de llenado.",
+      "variables": {
+        "nivel": {"unidad": "%", "min": 0, "max": 100},
+        "caudal": {"unidad": "L/min", "min": 0, "max": 5},
+        "bomba": {"unidad": "1/0", "min": 0, "max": 1},
+        "consumo_dia": {"unidad": "L", "min": 0, "max": 2000}
+      },
+      "acciones": ["bomba", "umbral"]
+    },
+    {
+      "id": "tablero-energia",
+      "nombre": "Tablero eléctrico",
+      "categoria": "Gemelo digital",
+      "origen": "Python (gemelo del galpón)",
+      "protocolo": "MQTT",
+      "ubicacion": "Cuarto eléctrico",
+      "descripcion": "Voltaje, corriente y potencia de la finca. Detecta cortes de luz, que apagan ventilación, luces y bomba.",
+      "variables": {
+        "voltaje": {"unidad": "V", "min": 0, "max": 130},
+        "corriente": {"unidad": "A", "min": 0, "max": 40},
+        "potencia": {"unidad": "kW", "min": 0, "max": 5},
+        "red": {"unidad": "1/0", "min": 0, "max": 1}
+      },
+      "acciones": ["simular_corte"]
+    },
+    {
+      "id": "contador-huevos",
+      "nombre": "Contador de huevos",
+      "categoria": "Gemelo digital",
+      "origen": "Python (gemelo del lote)",
+      "protocolo": "HTTP REST",
+      "ubicacion": "Banda de recolección",
+      "descripcion": "Cuenta y pesa los huevos en la banda. La postura sigue la curva Hy-Line Brown y baja con el calor.",
+      "variables": {
+        "huevos_hora": {"unidad": "huevos/h", "min": 0, "max": 1500},
+        "huevos_dia": {"unidad": "huevos", "min": 0, "max": 5000},
+        "postura": {"unidad": "%", "min": 0, "max": 100},
+        "peso_promedio": {"unidad": "g", "min": 45, "max": 75},
+        "rotos_dia": {"unidad": "huevos", "min": 0, "max": 200}
+      },
+      "acciones": ["aves"]
+    },
+    {
+      "id": "silo-alimento",
+      "nombre": "Silo de alimento",
+      "categoria": "Gemelo digital",
+      "origen": "Python (gemelo del lote)",
+      "protocolo": "HTTP REST",
+      "ubicacion": "Silo exterior",
+      "descripcion": "Celdas de carga del silo de 8.000 kg y consumo por hora. Se llena cuando llega el camión.",
+      "variables": {
+        "nivel": {"unidad": "kg", "min": 0, "max": 8000},
+        "consumo_hora": {"unidad": "kg/h", "min": 0, "max": 80},
+        "bultos": {"unidad": "bultos de 40 kg", "min": 0, "max": 200}
+      },
+      "acciones": ["llenado"]
+    },
+    {
+      "id": "clima-openmeteo",
+      "nombre": "Clima Open-Meteo",
+      "categoria": "API",
+      "origen": "API pública Open-Meteo",
+      "protocolo": "HTTP (consulta) + MQTT (envío)",
+      "ubicacion": "Exterior de la finca",
+      "descripcion": "Clima real actual en la finca. Los gemelos lo usan como clima exterior.",
+      "variables": {
+        "temperatura": {"unidad": "°C", "min": 10, "max": 40},
+        "humedad": {"unidad": "%", "min": 20, "max": 100},
+        "lluvia": {"unidad": "mm", "min": 0, "max": 50},
+        "viento": {"unidad": "km/h", "min": 0, "max": 60},
+        "radiacion": {"unidad": "W/m²", "min": 0, "max": 1200},
+        "nubosidad": {"unidad": "%", "min": 0, "max": 100}
+      },
+      "acciones": []
+    },
+    {
+      "id": "clima-azure-maps",
+      "nombre": "Clima Azure Maps",
+      "categoria": "API",
+      "origen": "Azure Maps Weather (Atlas)",
+      "protocolo": "HTTP REST",
+      "ubicacion": "Exterior de la finca",
+      "descripcion": "Condiciones actuales de Azure Maps Weather para comparar con Open-Meteo.",
+      "variables": {
+        "temperatura": {"unidad": "°C", "min": 10, "max": 40},
+        "sensacion": {"unidad": "°C", "min": 10, "max": 45},
+        "humedad": {"unidad": "%", "min": 20, "max": 100},
+        "punto_rocio": {"unidad": "°C", "min": 5, "max": 30},
+        "indice_uv": {"unidad": "", "min": 0, "max": 14},
+        "nubosidad": {"unidad": "%", "min": 0, "max": 100}
+      },
+      "acciones": []
+    },
+    {
+      "id": "historico-era5",
+      "nombre": "Histórico ERA5 (dataset)",
+      "categoria": "DataSet",
+      "origen": "CSV del reanálisis ERA5 de 2025 en el mismo punto",
+      "protocolo": "MQTT",
+      "ubicacion": "Exterior de la finca",
+      "descripcion": "Reproduce el clima de los mismos días de 2025 para comparar el año pasado con el actual.",
+      "variables": {
+        "temperatura": {"unidad": "°C", "min": 10, "max": 40},
+        "humedad": {"unidad": "%", "min": 20, "max": 100},
+        "lluvia": {"unidad": "mm", "min": 0, "max": 50},
+        "radiacion": {"unidad": "W/m²", "min": 0, "max": 1200}
+      },
+      "acciones": ["desfase"]
+    },
+    {
+      "id": "pasarela-finca",
+      "nombre": "Pasarela de la finca",
+      "categoria": "Real",
+      "origen": "Computador que corre la pasarela (psutil)",
+      "protocolo": "MQTT",
+      "ubicacion": "Casa de la finca",
+      "descripcion": "Mediciones reales del equipo que hace de pasarela: latencia al bróker, CPU, memoria y tiempo encendido.",
+      "variables": {
+        "latencia": {"unidad": "ms", "min": 0, "max": 2000},
+        "cpu": {"unidad": "%", "min": 0, "max": 100},
+        "memoria": {"unidad": "%", "min": 0, "max": 100},
+        "encendido_horas": {"unidad": "h", "min": 0, "max": 1000}
+      },
+      "acciones": []
+    },
+    {
+      "id": "galpon2-ambiente",
+      "nombre": "Ambiente galpón 2 (ESP32)",
+      "categoria": "Real",
+      "origen": "ESP32 + DHT22 + LDR (físico o Wokwi)",
+      "protocolo": "MQTT",
+      "ubicacion": "Galpón 2",
+      "descripcion": "Nodo ESP32 con firmware propio. Corre en Wokwi o en una tarjeta física con el mismo código.",
+      "variables": {
+        "temperatura": {"unidad": "°C", "min": 15, "max": 40},
+        "humedad": {"unidad": "%", "min": 30, "max": 100},
+        "luz": {"unidad": "lux", "min": 0, "max": 1000}
+      },
+      "acciones": ["led"]
+    }
+  ],
+  "reglas": [
+    {"dispositivo": "galpon1-ambiente", "variable": "temperatura", "operador": ">", "umbral": 30, "nivel": "aviso", "mensaje": "Calor en el galpón: las aves comen menos y baja la postura"},
+    {"dispositivo": "galpon1-ambiente", "variable": "temperatura", "operador": ">", "umbral": 33, "nivel": "crítica", "mensaje": "Estrés calórico: riesgo de mortalidad", "accion": {"dispositivo": "galpon1-ventilacion", "accion": "velocidad", "parametros": {"valor": 100}}},
+    {"dispositivo": "galpon1-ambiente", "variable": "humedad", "operador": ">", "umbral": 85, "nivel": "aviso", "mensaje": "Humedad alta: la cama se moja y sube el amoníaco"},
+    {"dispositivo": "galpon1-gases", "variable": "amoniaco", "operador": ">", "umbral": 25, "nivel": "crítica", "mensaje": "Amoníaco sobre 25 ppm: daña vías respiratorias y ojos", "accion": {"dispositivo": "galpon1-ventilacion", "accion": "velocidad", "parametros": {"valor": 100}}},
+    {"dispositivo": "galpon1-gases", "variable": "co2", "operador": ">", "umbral": 3000, "nivel": "aviso", "mensaje": "CO2 alto: falta renovar aire"},
+    {"dispositivo": "tanque-agua", "variable": "nivel", "operador": "<", "umbral": 20, "nivel": "crítica", "mensaje": "Tanque casi vacío: revisar la bomba"},
+    {"dispositivo": "silo-alimento", "variable": "nivel", "operador": "<", "umbral": 1200, "nivel": "aviso", "mensaje": "Silo bajo: pedir alimento"},
+    {"dispositivo": "tablero-energia", "variable": "red", "operador": "<", "umbral": 1, "nivel": "crítica", "mensaje": "Corte de luz: sin ventilación ni bomba"},
+    {"dispositivo": "contador-huevos", "variable": "postura", "operador": "<", "umbral": 85, "nivel": "aviso", "mensaje": "Postura por debajo de la curva Hy-Line"},
+    {"dispositivo": "pasarela-finca", "variable": "latencia", "operador": ">", "umbral": 800, "nivel": "aviso", "mensaje": "Conexión lenta entre la finca y la nube"},
+    {"dispositivo": "galpon2-ambiente", "variable": "temperatura", "operador": ">", "umbral": 30, "nivel": "aviso", "mensaje": "Calor en el galpón 2", "accion": {"dispositivo": "galpon2-ambiente", "accion": "led", "parametros": {"valor": 1}}}
+  ]
+}
