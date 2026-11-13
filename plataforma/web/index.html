@@ -1,0 +1,406 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Galpón Conectado</title>
+<link rel="icon" href="/estatico/logo.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root {
+  --monte: #1E5B43; --monte-claro: #E3EFE8; --yema: #F4B23E; --yema-claro: #FDF1DA;
+  --tinta: #1C2520; --tenue: #5C6862; --cal: #F5F4EF; --blanco: #FFFFFF; --borde: #DCDDD5;
+  --rojo: #B3261E; --rojo-claro: #FBE4E2; --gris: #9AA39E;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--cal); color: var(--tinta); font: 16px/1.45 "Atkinson Hyperlegible Next", system-ui, sans-serif; }
+header { background: var(--monte); color: #fff; padding: 14px 20px; display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+header img { width: 42px; height: 42px; }
+header h1 { margin: 0; font-size: 1.35rem; }
+header .sub { opacity: .85; font-size: .9rem; }
+header .der { margin-left: auto; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.chip { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 99px; font-size: .8rem; font-weight: 600; }
+.chip.ok { background: var(--monte-claro); color: var(--monte); }
+.chip.mal { background: var(--rojo-claro); color: var(--rojo); }
+.chip.cat { background: var(--yema-claro); color: #7A5410; }
+.punto { width: 9px; height: 9px; border-radius: 50%; background: var(--gris); display: inline-block; }
+.punto.on { background: #2E9B5F; box-shadow: 0 0 0 3px #2E9B5F33; }
+a.boton, button { font: inherit; font-weight: 600; border: 0; border-radius: 10px; padding: 10px 14px; cursor: pointer; min-height: 44px; text-decoration: none; display: inline-flex; align-items: center; }
+.primario { background: var(--yema); color: var(--tinta); }
+.secundario { background: var(--blanco); color: var(--monte); border: 1.5px solid var(--monte); }
+.peligro { background: var(--rojo); color: #fff; }
+header a.boton { background: #ffffff22; color: #fff; }
+main { max-width: 1280px; margin: 0 auto; padding: 18px 16px 60px; }
+nav { display: flex; gap: 6px; margin-bottom: 16px; flex-wrap: wrap; }
+nav button { background: var(--blanco); color: var(--tenue); border: 1px solid var(--borde); }
+nav button.activo { background: var(--monte); color: #fff; border-color: var(--monte); }
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; margin-bottom: 18px; }
+.kpi { background: var(--blanco); border: 1px solid var(--borde); border-radius: 14px; padding: 14px; }
+.kpi .t { color: var(--tenue); font-size: .85rem; }
+.kpi .v { font-size: 1.7rem; font-weight: 700; }
+.kpi .u { font-size: .9rem; color: var(--tenue); font-weight: 400; }
+.rejilla { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 12px; }
+.tarjeta { background: var(--blanco); border: 1px solid var(--borde); border-radius: 14px; padding: 14px; display: flex; flex-direction: column; gap: 8px; }
+.tarjeta.apagado { opacity: .7; }
+.tarjeta h3 { margin: 0; font-size: 1.05rem; display: flex; align-items: center; gap: 8px; }
+.meta { font-size: .8rem; color: var(--tenue); }
+.valores { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 10px; font-size: .92rem; }
+.valores b { font-size: 1.05rem; }
+.fila { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.panel { background: var(--blanco); border: 1px solid var(--borde); border-radius: 14px; padding: 16px; margin-bottom: 16px; }
+.panel h2 { margin: 0 0 10px; font-size: 1.15rem; }
+select, input { font: inherit; padding: 9px 10px; border: 1px solid var(--borde); border-radius: 9px; min-height: 44px; background: #fff; }
+table { width: 100%; border-collapse: collapse; font-size: .9rem; }
+th, td { text-align: left; padding: 8px 6px; border-bottom: 1px solid var(--borde); vertical-align: top; }
+th { color: var(--tenue); font-weight: 600; }
+.critica { color: var(--rojo); font-weight: 700; }
+.aviso { color: #8A5A00; font-weight: 700; }
+.estad { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 10px 0; }
+.estad div { background: var(--cal); border-radius: 10px; padding: 8px 10px; }
+.estad b { display: block; font-size: 1.2rem; }
+.oculto { display: none !important; }
+dialog { border: 0; border-radius: 16px; padding: 0; width: min(560px, 94vw); }
+dialog::backdrop { background: #1c252080; }
+.dlg { padding: 18px; display: flex; flex-direction: column; gap: 12px; }
+.dlg h2 { margin: 0; }
+.grupo { border: 1px solid var(--borde); border-radius: 12px; padding: 12px; display: flex; flex-direction: column; gap: 8px; }
+.grupo h4 { margin: 0; font-size: .95rem; }
+.aviso-txt { font-size: .85rem; color: var(--tenue); }
+#toast { position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%); background: var(--tinta); color: #fff; padding: 12px 18px; border-radius: 12px; opacity: 0; transition: opacity .2s; pointer-events: none; max-width: 90vw; }
+#toast.ver { opacity: 1; }
+.lienzo { position: relative; height: 340px; }
+@media (max-width: 640px) { .estad { grid-template-columns: 1fr 1fr; } header h1 { font-size: 1.1rem; } }
+</style>
+</head>
+<body>
+<header>
+  <img src="/estatico/logo.svg" alt="">
+  <div>
+    <h1>Galpón Conectado</h1>
+    <div class="sub" id="granja">Granja avícola</div>
+  </div>
+  <div class="der">
+    <span class="chip" id="mqtt">MQTT</span>
+    <span class="sub" id="reloj"></span>
+    <a class="boton oculto" id="grafana" target="_blank" rel="noopener">Abrir Grafana</a>
+  </div>
+</header>
+<main>
+  <nav>
+    <button data-vista="tablero" class="activo">Tablero</button>
+    <button data-vista="graficas">Gráficas</button>
+    <button data-vista="alertas">Alertas y reglas</button>
+    <button data-vista="bitacora">Comandos y conexiones</button>
+  </nav>
+
+  <section id="tablero">
+    <div class="kpis" id="kpis"></div>
+    <div class="rejilla" id="dispositivos"></div>
+  </section>
+
+  <section id="graficas" class="oculto">
+    <div class="panel">
+      <div class="fila">
+        <select id="g-disp" aria-label="Dispositivo"></select>
+        <select id="g-var" aria-label="Variable"></select>
+        <select id="g-rango" aria-label="Rango">
+          <option value="1">Última hora</option>
+          <option value="6">6 horas</option>
+          <option value="24" selected>24 horas</option>
+          <option value="72">3 días</option>
+          <option value="144">6 días</option>
+          <option value="0">Todo</option>
+        </select>
+        <select id="g-paso" aria-label="Agrupar">
+          <option value="">Agrupar automático</option>
+          <option value="60">Cada minuto</option>
+          <option value="300">Cada 5 min</option>
+          <option value="900">Cada 15 min</option>
+          <option value="3600">Cada hora</option>
+        </select>
+        <button class="secundario" id="g-ver">Actualizar</button>
+      </div>
+      <div class="estad" id="g-estad"></div>
+      <div class="lienzo"><canvas id="g-canvas"></canvas></div>
+      <p class="aviso-txt">La línea es el promedio de cada intervalo y la banda va del mínimo al máximo. Las líneas punteadas son los umbrales de las reglas.</p>
+    </div>
+    <div class="panel">
+      <h2>Resumen del periodo</h2>
+      <table id="resumen"></table>
+    </div>
+  </section>
+
+  <section id="alertas" class="oculto">
+    <div class="panel">
+      <h2>Alertas</h2>
+      <table id="t-alertas"></table>
+    </div>
+    <div class="panel">
+      <h2>Reglas</h2>
+      <p class="aviso-txt">Cada regla crea una alerta cuando se cumple y la cierra cuando el valor vuelve. Algunas también mandan un comando a otro dispositivo.</p>
+      <table id="t-reglas"></table>
+    </div>
+  </section>
+
+  <section id="bitacora" class="oculto">
+    <div class="panel">
+      <h2>Comandos enviados</h2>
+      <table id="t-comandos"></table>
+    </div>
+    <div class="panel">
+      <h2>Conexiones y desconexiones</h2>
+      <table id="t-conexiones"></table>
+    </div>
+  </section>
+</main>
+
+<dialog id="dlg">
+  <div class="dlg">
+    <div class="fila"><h2 id="d-titulo"></h2><button class="secundario" style="margin-left:auto" id="d-cerrar">← Volver</button></div>
+    <div class="meta" id="d-meta"></div>
+    <div class="grupo">
+      <h4>Encendido</h4>
+      <div class="fila"><button class="primario" data-cmd="encender">Encender</button><button class="peligro" data-cmd="apagar">Apagar</button></div>
+      <div class="aviso-txt">Apagado deja de medir pero sigue conectado esperando órdenes.</div>
+    </div>
+    <div class="grupo">
+      <h4>Intervalo de envío</h4>
+      <div class="fila"><input type="number" id="d-intervalo" min="5" max="3600" style="width:120px"> segundos <button class="secundario" id="d-int-btn">Cambiar</button></div>
+    </div>
+    <div class="grupo">
+      <h4>Calibración</h4>
+      <div class="fila">
+        <select id="d-cal-var"></select>
+        <input type="number" step="any" id="d-offset" placeholder="Offset" style="width:110px">
+        <input type="number" step="any" id="d-factor" placeholder="Factor" style="width:110px">
+      </div>
+      <div class="fila"><button class="secundario" id="d-cal-btn">Calibrar</button><button class="secundario" data-cmd="reiniciar_calibracion">De fábrica</button></div>
+      <div class="aviso-txt">Valor enviado = medido × factor + offset.</div>
+    </div>
+    <div id="d-propias"></div>
+    <div class="grupo">
+      <h4>Últimos comandos</h4>
+      <table id="d-historial"></table>
+    </div>
+  </div>
+</dialog>
+<div id="toast"></div>
+
+<script>
+const $ = s => document.querySelector(s);
+const NIVEL = { "crítica": "critica", "aviso": "aviso" };
+const ACCIONES = {
+  velocidad: { titulo: "Velocidad manual", campos: [{ n: "valor", tipo: "number", min: 0, max: 100, et: "%" }] },
+  modo: { titulo: "Modo de los ventiladores", campos: [{ n: "auto", tipo: "select", op: [["true", "Automático"], ["false", "Manual"]] }] },
+  horario: { titulo: "Horario de luces", campos: [{ n: "encendido", tipo: "number", min: 0, max: 24, et: "h enciende" }, { n: "apagado", tipo: "number", min: 0, max: 24, et: "h apaga" }] },
+  forzar: { titulo: "Forzar luces", campos: [{ n: "valor", tipo: "select", op: [["null", "Según horario"], ["1", "Encendidas"], ["0", "Apagadas"]] }] },
+  bomba: { titulo: "Bomba de llenado", campos: [{ n: "valor", tipo: "select", op: [["\"auto\"", "Automática"], ["1", "Encendida"], ["0", "Apagada"]] }] },
+  umbral: { titulo: "Nivel para arrancar la bomba", campos: [{ n: "bajo", tipo: "number", min: 5, max: 80, et: "%" }] },
+  simular_corte: { titulo: "Simular corte de luz", campos: [{ n: "minutos", tipo: "number", min: 1, max: 120, et: "min" }] },
+  aves: { titulo: "Aves en el lote", campos: [{ n: "valor", tipo: "number", min: 0, max: 6000, et: "aves" }] },
+  llenado: { titulo: "Registrar llegada de alimento", campos: [{ n: "kg", tipo: "number", min: 1, max: 8000, et: "kg" }] },
+  desfase: { titulo: "Días hacia atrás del dataset", campos: [{ n: "dias", tipo: "number", min: 0, max: 400, et: "días" }] },
+  led: { titulo: "LED de alarma del ESP32", campos: [{ n: "valor", tipo: "select", op: [["1", "Encendido"], ["0", "Apagado"]] }] },
+};
+let info = {}, dispositivos = [], reglas = [], actual = null, grafica = null;
+
+function clave() { try { return localStorage.getItem("panel-clave") || ""; } catch { return ""; } }
+function guardarClave(v) { try { localStorage.setItem("panel-clave", v); } catch {} }
+function aviso(t) { const e = $("#toast"); e.textContent = t; e.classList.add("ver"); setTimeout(() => e.classList.remove("ver"), 3500); }
+async function api(ruta, op = {}) {
+  const r = await fetch(ruta, { ...op, headers: { "Content-Type": "application/json", ...(clave() ? { Authorization: "Bearer " + clave() } : {}), ...(op.headers || {}) } });
+  if (r.status === 401) {
+    const v = prompt("Clave del panel para enviar órdenes:");
+    if (v) { guardarClave(v); return api(ruta, op); }
+    throw new Error("Sin clave");
+  }
+  if (!r.ok) { let m = r.statusText; try { m = (await r.json()).detail; } catch {} throw new Error(m); }
+  return r.status === 204 ? null : r.json();
+}
+function num(v, u) {
+  if (v === undefined || v === null) return "—";
+  if (u === "1/0") return v >= 0.5 ? "Sí" : "No";
+  const a = Math.abs(v), d = a >= 1000 ? 0 : a >= 100 ? 1 : 2;
+  return Number(v).toLocaleString("es-CO", { maximumFractionDigits: d }) + (u ? " " + u : "");
+}
+function hace(iso) {
+  if (!iso) return "nunca";
+  const s = (Date.now() - new Date(iso)) / 1000;
+  if (s < 90) return "hace " + Math.round(s) + " s";
+  if (s < 5400) return "hace " + Math.round(s / 60) + " min";
+  if (s < 172800) return "hace " + Math.round(s / 3600) + " h";
+  return new Date(iso).toLocaleString("es-CO");
+}
+function fecha(iso) { return iso ? new Date(iso).toLocaleString("es-CO", { dateStyle: "short", timeStyle: "short" }) : "—"; }
+function esc(t) { return String(t ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])); }
+function ultimo(id, v) { const d = dispositivos.find(x => x.id === id); return d && d.ultimos[v] ? d.ultimos[v].valor : null; }
+
+function pintarTablero() {
+  const enLinea = dispositivos.filter(d => d.en_linea).length;
+  const kpis = [
+    ["Dispositivos en línea", `${enLinea}<span class="u"> / ${dispositivos.length}</span>`],
+    ["Temperatura galpón 1", num(ultimo("galpon1-ambiente", "temperatura"), "°C")],
+    ["Amoníaco", num(ultimo("galpon1-gases", "amoniaco"), "ppm")],
+    ["Postura estimada hoy", num(ultimo("contador-huevos", "postura"), "%")],
+    ["Huevos hoy", num(ultimo("contador-huevos", "huevos_dia"))],
+    ["Tanque de agua", num(ultimo("tanque-agua", "nivel"), "%")],
+    ["Silo", num(ultimo("silo-alimento", "bultos"), "bultos")],
+    ["Clima exterior", num(ultimo("clima-openmeteo", "temperatura"), "°C")],
+  ];
+  $("#kpis").innerHTML = kpis.map(([t, v]) => `<div class="kpi"><div class="t">${t}</div><div class="v">${v}</div></div>`).join("");
+  $("#dispositivos").innerHTML = dispositivos.map(d => {
+    const apagado = d.estado.encendido === false;
+    const vals = Object.entries(d.variables).map(([k, m]) => `<span>${esc(k.replace(/_/g, " "))}</span><b>${num(d.ultimos[k]?.valor, m.unidad)}</b>`).join("");
+    return `<article class="tarjeta ${apagado ? "apagado" : ""}">
+      <h3><span class="punto ${d.en_linea ? "on" : ""}"></span>${esc(d.nombre)}</h3>
+      <div class="fila"><span class="chip cat">${esc(d.categoria)}</span><span class="chip ok">${esc(d.protocolo)}</span>${apagado ? '<span class="chip mal">Apagado</span>' : ""}</div>
+      <div class="meta">${esc(d.origen)} · ${esc(d.ubicacion)} · ${d.en_linea ? "en línea" : "desconectado"} · ${hace(d.ultimo_contacto)}</div>
+      <div class="valores">${vals}</div>
+      <div class="fila" style="margin-top:auto"><button class="secundario" data-abrir="${d.id}">Controlar</button><button class="secundario" data-graficar="${d.id}">Gráfica</button></div>
+    </article>`;
+  }).join("");
+}
+
+async function cargar() {
+  try {
+    [dispositivos, info] = await Promise.all([api("/api/dispositivos"), api("/api/info")]);
+    $("#granja").textContent = `${info.granja.nombre} · ${info.granja.ubicacion} · ${num(info.granja.aves)} aves ${info.granja.linea}`;
+    const m = $("#mqtt"); m.className = "chip " + (info.mqtt ? "ok" : "mal"); m.textContent = info.mqtt ? "Bróker conectado" : "Bróker caído";
+    if (info.grafana) { const g = $("#grafana"); g.href = info.grafana; g.classList.remove("oculto"); }
+    pintarTablero();
+    if (actual) pintarDialogo();
+    if (!$("#g-disp").options.length) prepararGraficas();
+  } catch (e) { aviso("No se pudo cargar: " + e.message); }
+}
+
+function campoHtml(accion, c) {
+  const id = `p-${accion}-${c.n}`;
+  if (c.tipo === "select") return `<select id="${id}">${c.op.map(([v, t]) => `<option value='${v}'>${t}</option>`).join("")}</select>`;
+  return `<input id="${id}" type="number" step="any" min="${c.min}" max="${c.max}" style="width:120px"> ${c.et || ""}`;
+}
+function abrir(id) { actual = id; pintarDialogo(); $("#dlg").showModal(); }
+async function pintarDialogo() {
+  const d = dispositivos.find(x => x.id === actual); if (!d) return;
+  $("#d-titulo").textContent = d.nombre;
+  $("#d-meta").innerHTML = `${esc(d.descripcion)}<br>${esc(d.categoria)} · ${esc(d.protocolo)} · <code>${d.id}</code> · estado: <code>${esc(JSON.stringify(d.estado))}</code>`;
+  if (document.activeElement !== $("#d-intervalo")) $("#d-intervalo").value = d.estado.intervalo_s || 60;
+  const sel = $("#d-cal-var"); if (sel.dataset.disp !== d.id) { sel.innerHTML = Object.keys(d.variables).map(v => `<option>${v}</option>`).join(""); sel.dataset.disp = d.id; }
+  const propias = d.acciones.filter(a => ACCIONES[a]);
+  const cont = $("#d-propias");
+  if (cont.dataset.disp !== d.id) {
+    cont.dataset.disp = d.id;
+    cont.innerHTML = propias.map(a => `<div class="grupo"><h4>${ACCIONES[a].titulo}</h4><div class="fila">${ACCIONES[a].campos.map(c => campoHtml(a, c)).join("")}<button class="primario" data-propia="${a}">Enviar</button></div></div>`).join("");
+  }
+  const hist = await api(`/api/comandos?limite=8&dispositivo=${d.id}`);
+  $("#d-historial").innerHTML = hist.length ? hist.map(c => `<tr><td>${fecha(c.ts)}</td><td>${esc(c.accion)}</td><td>${esc(c.estado)}</td><td>${esc(c.respuesta || "")}</td></tr>`).join("") : "<tr><td>Sin comandos todavía</td></tr>";
+}
+async function mandar(accion, parametros = {}) {
+  try {
+    const r = await api(`/api/dispositivos/${actual}/comandos`, { method: "POST", body: JSON.stringify({ accion, parametros }) });
+    aviso(`Orden «${accion}» ${r.estado === "enviado" ? "enviada por MQTT" : "en cola para HTTP"}`);
+    setTimeout(cargar, 1500); setTimeout(cargar, 8000);
+  } catch (e) { aviso("No se pudo: " + e.message); }
+}
+
+function prepararGraficas() {
+  $("#g-disp").innerHTML = dispositivos.map(d => `<option value="${d.id}">${esc(d.nombre)}</option>`).join("");
+  llenarVariables();
+}
+function llenarVariables() {
+  const d = dispositivos.find(x => x.id === $("#g-disp").value);
+  $("#g-var").innerHTML = Object.entries(d.variables).map(([k, m]) => `<option value="${k}">${k.replace(/_/g, " ")} (${m.unidad || "—"})</option>`).join("");
+}
+async function graficar() {
+  const disp = $("#g-disp").value, variable = $("#g-var").value, horas = Number($("#g-rango").value) || 24 * 30;
+  const paso = $("#g-paso").value;
+  try {
+    const s = await api(`/api/dispositivos/${disp}/serie?variable=${variable}&horas=${horas}${paso ? "&paso=" + paso : ""}`);
+    const r = s.resumen;
+    $("#g-estad").innerHTML = r ? [["Promedio", r.promedio], ["Mínimo", r.min], ["Máximo", r.max], ["Lecturas", r.lecturas]].map(([t, v], i) => `<div>${t}<b>${num(v, i < 3 ? s.unidad : "")}</b></div>`).join("") : "<div>Sin datos en el rango</div>";
+    const etiquetas = s.puntos.map(p => new Date(p.ts));
+    const umbrales = reglas.filter(x => x.dispositivo === disp && x.variable === variable && x.activa);
+    const conjuntos = [
+      { label: "Máximo", data: s.puntos.map(p => p.max), borderWidth: 0, pointRadius: 0, backgroundColor: "#1E5B4322", fill: "+1" },
+      { label: "Mínimo", data: s.puntos.map(p => p.min), borderWidth: 0, pointRadius: 0, fill: false },
+      { label: "Promedio", data: s.puntos.map(p => p.promedio), borderColor: "#1E5B43", borderWidth: 2, pointRadius: 0, tension: .25 },
+      ...umbrales.map(u => ({ label: `Regla ${u.operador} ${u.umbral}`, data: s.puntos.map(() => u.umbral), borderColor: u.nivel === "crítica" ? "#B3261E" : "#F4B23E", borderDash: [6, 4], borderWidth: 1.5, pointRadius: 0 })),
+    ];
+    if (grafica) grafica.destroy();
+    grafica = new Chart($("#g-canvas"), {
+      type: "line",
+      data: { labels: etiquetas.map(f => f.toLocaleString("es-CO", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })), datasets: conjuntos },
+      options: { maintainAspectRatio: false, animation: false, interaction: { mode: "index", intersect: false }, scales: { x: { ticks: { maxTicksLimit: 10 } }, y: { title: { display: true, text: s.unidad } } }, plugins: { legend: { labels: { filter: i => i.text !== "Mínimo" } } } },
+    });
+    const res = await api(`/api/resumen?horas=${horas}`);
+    const nombres = Object.fromEntries(dispositivos.map(d => [d.id, d.nombre]));
+    $("#resumen").innerHTML = "<tr><th>Dispositivo</th><th>Variable</th><th>Promedio</th><th>Mín.</th><th>Máx.</th><th>Lecturas</th></tr>" +
+      res.variables.sort((a, b) => a.dispositivo.localeCompare(b.dispositivo)).map(v => `<tr><td>${esc(nombres[v.dispositivo] || v.dispositivo)}</td><td>${esc(v.variable)}</td><td>${num(v.promedio, v.unidad)}</td><td>${num(v.min)}</td><td>${num(v.max)}</td><td>${v.lecturas}</td></tr>`).join("");
+  } catch (e) { aviso("No se pudo graficar: " + e.message); }
+}
+
+async function pintarAlertas() {
+  const [al, rg] = await Promise.all([api("/api/alertas?limite=150"), api("/api/reglas")]);
+  reglas = rg;
+  $("#t-alertas").innerHTML = "<tr><th>Inicio</th><th>Fin</th><th>Dispositivo</th><th>Nivel</th><th>Mensaje</th><th>Valor</th><th>Extremo</th></tr>" +
+    (al.length ? al.map(a => `<tr><td>${fecha(a.inicio)}</td><td>${a.fin ? fecha(a.fin) : "<b>activa</b>"}</td><td>${esc(a.dispositivo)}</td><td class="${NIVEL[a.nivel] || ""}">${esc(a.nivel)}</td><td>${esc(a.mensaje)}</td><td>${num(a.valor)}</td><td>${num(a.valor_extremo)}</td></tr>`).join("") : "<tr><td colspan=7>Sin alertas</td></tr>");
+  $("#t-reglas").innerHTML = "<tr><th>Dispositivo</th><th>Condición</th><th>Nivel</th><th>Mensaje</th><th>Acción automática</th><th></th></tr>" +
+    rg.map(r => `<tr><td>${esc(r.dispositivo)}</td><td>${esc(r.variable)} ${esc(r.operador)} <input type="number" step="any" value="${r.umbral}" data-umbral="${r.id}" style="width:90px"></td><td class="${NIVEL[r.nivel] || ""}">${esc(r.nivel)}</td><td>${esc(r.mensaje)}</td><td>${r.accion ? esc(`${r.accion.dispositivo}: ${r.accion.accion} ${JSON.stringify(r.accion.parametros || {})}`) : "—"}</td><td><button class="secundario" data-regla="${r.id}">${r.activa ? "Desactivar" : "Activar"}</button></td></tr>`).join("");
+}
+async function pintarBitacora() {
+  const [cm, cx] = await Promise.all([api("/api/comandos?limite=100"), api("/api/conexiones?limite=100")]);
+  $("#t-comandos").innerHTML = "<tr><th>Hora</th><th>Dispositivo</th><th>Acción</th><th>Parámetros</th><th>Origen</th><th>Estado</th><th>Respuesta</th></tr>" +
+    cm.map(c => `<tr><td>${fecha(c.ts)}</td><td>${esc(c.dispositivo)}</td><td>${esc(c.accion)}</td><td><code>${esc(JSON.stringify(c.parametros))}</code></td><td>${esc(c.origen)}</td><td>${esc(c.estado)}</td><td>${esc(c.respuesta || "")}</td></tr>`).join("");
+  $("#t-conexiones").innerHTML = "<tr><th>Hora</th><th>Dispositivo</th><th>Evento</th></tr>" +
+    cx.map(c => `<tr><td>${fecha(c.ts)}</td><td>${esc(c.dispositivo)}</td><td>${c.en_linea ? "Se conectó" : "Se desconectó"}</td></tr>`).join("");
+}
+
+function vista(nombre) {
+  document.querySelectorAll("nav button").forEach(b => b.classList.toggle("activo", b.dataset.vista === nombre));
+  ["tablero", "graficas", "alertas", "bitacora"].forEach(v => $("#" + v).classList.toggle("oculto", v !== nombre));
+  if (nombre === "graficas") pintarAlertas().then(graficar);
+  if (nombre === "alertas") pintarAlertas();
+  if (nombre === "bitacora") pintarBitacora();
+}
+
+document.addEventListener("click", async e => {
+  const b = e.target.closest("button"); if (!b) return;
+  if (b.dataset.vista) vista(b.dataset.vista);
+  if (b.dataset.abrir) abrir(b.dataset.abrir);
+  if (b.dataset.graficar) { vista("graficas"); $("#g-disp").value = b.dataset.graficar; llenarVariables(); graficar(); }
+  if (b.dataset.cmd) mandar(b.dataset.cmd);
+  if (b.dataset.propia) {
+    const a = b.dataset.propia, p = {};
+    for (const c of ACCIONES[a].campos) { const v = $(`#p-${a}-${c.n}`).value; if (v === "") return aviso("Completa los campos"); p[c.n] = c.tipo === "select" ? JSON.parse(v) : Number(v); }
+    mandar(a, p);
+  }
+  if (b.dataset.regla) {
+    const r = reglas.find(x => x.id == b.dataset.regla);
+    try { await api(`/api/reglas/${r.id}`, { method: "PUT", body: JSON.stringify({ ...r, activa: !r.activa }) }); pintarAlertas(); } catch (er) { aviso(er.message); }
+  }
+  if (b.id === "d-cerrar") { $("#dlg").close(); actual = null; }
+  if (b.id === "d-int-btn") mandar("intervalo", { segundos: Number($("#d-intervalo").value) });
+  if (b.id === "d-cal-btn") {
+    const p = { variable: $("#d-cal-var").value };
+    if ($("#d-offset").value !== "") p.offset = Number($("#d-offset").value);
+    if ($("#d-factor").value !== "") p.factor = Number($("#d-factor").value);
+    mandar("calibrar", p);
+  }
+  if (b.id === "g-ver") graficar();
+});
+document.addEventListener("change", async e => {
+  if (e.target.id === "g-disp") { llenarVariables(); graficar(); }
+  if (["g-var", "g-rango", "g-paso"].includes(e.target.id)) graficar();
+  if (e.target.dataset.umbral) {
+    const r = reglas.find(x => x.id == e.target.dataset.umbral);
+    try { await api(`/api/reglas/${r.id}`, { method: "PUT", body: JSON.stringify({ ...r, umbral: Number(e.target.value) }) }); aviso("Umbral guardado"); pintarAlertas(); } catch (er) { aviso(er.message); }
+  }
+});
+$("#dlg").addEventListener("close", () => { actual = null; });
+setInterval(() => { $("#reloj").textContent = new Date().toLocaleString("es-CO", { weekday: "short", hour: "2-digit", minute: "2-digit" }); }, 1000);
+cargar(); api("/api/reglas").then(r => reglas = r);
+setInterval(cargar, 15000);
+</script>
+</body>
+</html>

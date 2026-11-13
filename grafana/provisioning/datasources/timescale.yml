@@ -1,0 +1,15 @@
+apiVersion: 1
+datasources:
+  - name: Granja
+    uid: granja-bd
+    type: grafana-postgresql-datasource
+    url: bd:5432
+    user: granja
+    isDefault: true
+    jsonData:
+      database: granja
+      sslmode: disable
+      timescaledb: true
+      postgresVersion: 1600
+    secureJsonData:
+      password: $BD_CLAVE

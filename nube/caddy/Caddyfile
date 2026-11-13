@@ -1,0 +1,12 @@
+{$DOMINIO} {
+	encode gzip
+	handle /grafana* {
+		reverse_proxy grafana:3000
+	}
+	handle /mqtt* {
+		reverse_proxy mosquitto:9001
+	}
+	handle {
+		reverse_proxy plataforma:8000
+	}
+}

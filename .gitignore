@@ -8,3 +8,4 @@ local/*.db-*
 *.db
 .pytest_cache/
 informe/*.docx
+wokwi/*/secrets.h

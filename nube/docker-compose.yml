@@ -1,0 +1,108 @@
+name: galpon-conectado
+
+services:
+  bd:
+    image: timescale/timescaledb:2.17.2-pg16
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: granja
+      POSTGRES_USER: granja
+      POSTGRES_PASSWORD: ${BD_CLAVE}
+    volumes:
+      - bd:/var/lib/postgresql/data
+    ports:
+      - "127.0.0.1:5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U granja -d granja"]
+      interval: 10s
+      retries: 10
+
+  mosquitto:
+    image: eclipse-mosquitto:2.0.20
+    restart: unless-stopped
+    entrypoint: ["sh", "/mosquitto/config/arrancar.sh"]
+    environment:
+      MQTT_CLAVE_PLATAFORMA: ${MQTT_CLAVE_PLATAFORMA}
+      MQTT_CLAVE_DISPOSITIVOS: ${MQTT_CLAVE_DISPOSITIVOS}
+    volumes:
+      - ./mosquitto:/mosquitto/config:ro
+      - mosquitto:/mosquitto/data
+    ports:
+      - "1883:1883"
+
+  plataforma:
+    build:
+      context: ..
+      dockerfile: plataforma/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      bd:
+        condition: service_healthy
+      mosquitto:
+        condition: service_started
+    environment:
+      DATABASE_URL: postgresql://granja:${BD_CLAVE}@bd:5432/granja
+      MQTT_HOST: mosquitto
+      MQTT_USUARIO: plataforma
+      MQTT_CLAVE: ${MQTT_CLAVE_PLATAFORMA}
+      PANEL_CLAVE: ${PANEL_CLAVE}
+      DISPOSITIVOS_CLAVE: ${DISPOSITIVOS_CLAVE}
+      GRAFANA_URL: https://${DOMINIO}/grafana/d/galpon/galpon-conectado
+
+  dispositivos:
+    build:
+      context: ..
+      dockerfile: dispositivos/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      - plataforma
+    environment:
+      MQTT_HOST: mosquitto
+      MQTT_WS_PUERTO: "9001"
+      MQTT_USUARIO: dispositivos
+      MQTT_CLAVE: ${MQTT_CLAVE_DISPOSITIVOS}
+      API_URL: http://plataforma:8000
+      DISPOSITIVOS_CLAVE: ${DISPOSITIVOS_CLAVE}
+      AZURE_MAPS_CLAVE: ${AZURE_MAPS_CLAVE}
+      SOLO: galpon1-ambiente,galpon1-gases,galpon1-ventilacion,galpon1-iluminacion,tanque-agua,tablero-energia,contador-huevos,silo-alimento,clima-openmeteo,clima-azure-maps,historico-era5
+    volumes:
+      - estado:/app/estado
+
+  grafana:
+    image: grafana/grafana-oss:11.3.1
+    restart: unless-stopped
+    depends_on:
+      - bd
+    environment:
+      GF_SERVER_ROOT_URL: https://${DOMINIO}/grafana/
+      GF_SERVER_SERVE_FROM_SUB_PATH: "true"
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_CLAVE}
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Viewer
+      GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH: /etc/grafana/paneles/galpon.json
+      GF_DATE_FORMATS_DEFAULT_TIMEZONE: America/Bogota
+      GF_USERS_DEFAULT_LANGUAGE: es-ES
+      BD_CLAVE: ${BD_CLAVE}
+    volumes:
+      - ../grafana/provisioning:/etc/grafana/provisioning:ro
+      - ../grafana/paneles:/etc/grafana/paneles:ro
+      - grafana:/var/lib/grafana
+
+  caddy:
+    image: caddy:2.8.4
+    restart: unless-stopped
+    environment:
+      DOMINIO: ${DOMINIO}
+    volumes:
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy:/data
+    ports:
+      - "80:80"
+      - "443:443"
+
+volumes:
+  bd:
+  mosquitto:
+  estado:
+  grafana:
+  caddy:

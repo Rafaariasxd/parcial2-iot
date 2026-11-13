@@ -129,7 +129,7 @@
       "variables": {
         "nivel": {"unidad": "kg", "min": 0, "max": 8000},
         "consumo_hora": {"unidad": "kg/h", "min": 0, "max": 80},
-        "bultos": {"unidad": "bultos de 40 kg", "min": 0, "max": 200}
+        "bultos": {"unidad": "bultos", "min": 0, "max": 200}
       },
       "acciones": ["llenado"]
     },

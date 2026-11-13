@@ -1,0 +1,6 @@
+user plataforma
+topic readwrite granja/#
+
+user dispositivos
+topic read granja/clima-openmeteo/telemetria
+pattern readwrite granja/%c/#

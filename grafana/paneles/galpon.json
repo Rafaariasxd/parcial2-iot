@@ -1,0 +1,3294 @@
+{
+ "uid": "galpon",
+ "title": "Galpón Conectado",
+ "tags": [
+  "iot",
+  "granja"
+ ],
+ "timezone": "America/Bogota",
+ "schemaVersion": 39,
+ "version": 1,
+ "refresh": "1m",
+ "time": {
+  "from": "now-24h",
+  "to": "now"
+ },
+ "timepicker": {
+  "refresh_intervals": [
+   "30s",
+   "1m",
+   "5m",
+   "15m"
+  ]
+ },
+ "editable": true,
+ "graphTooltip": 1,
+ "annotations": {
+  "list": [
+   {
+    "name": "Alertas",
+    "enable": true,
+    "iconColor": "#B3261E",
+    "datasource": {
+     "type": "grafana-postgresql-datasource",
+     "uid": "granja-bd"
+    },
+    "target": {
+     "rawQuery": true,
+     "format": "table",
+     "refId": "Anno",
+     "editorMode": "code",
+     "rawSql": "SELECT inicio AS time, coalesce(fin, now()) AS timeend, mensaje AS text, nivel AS tags FROM alertas WHERE $__timeFilter(inicio)"
+    }
+   }
+  ]
+ },
+ "templating": {
+  "list": [
+   {
+    "name": "dispositivo",
+    "label": "Dispositivo",
+    "type": "query",
+    "datasource": {
+     "type": "grafana-postgresql-datasource",
+     "uid": "granja-bd"
+    },
+    "query": "SELECT id FROM dispositivos ORDER BY id",
+    "definition": "SELECT id FROM dispositivos ORDER BY id",
+    "refresh": 1,
+    "current": {
+     "text": "galpon1-ambiente",
+     "value": "galpon1-ambiente"
+    }
+   },
+   {
+    "name": "variable",
+    "label": "Variable",
+    "type": "query",
+    "datasource": {
+     "type": "grafana-postgresql-datasource",
+     "uid": "granja-bd"
+    },
+    "query": "SELECT DISTINCT variable FROM lecturas WHERE dispositivo = '$dispositivo' AND ts > now() - interval '2 days'",
+    "definition": "SELECT DISTINCT variable FROM lecturas WHERE dispositivo = '$dispositivo' AND ts > now() - interval '2 days'",
+    "refresh": 2
+   }
+  ]
+ },
+ "panels": [
+  {
+   "type": "row",
+   "title": "Ahora en el galpón",
+   "id": 2,
+   "collapsed": false,
+   "gridPos": {
+    "h": 1,
+    "w": 24,
+    "x": 0,
+    "y": 0
+   },
+   "panels": []
+  },
+  {
+   "type": "stat",
+   "title": "Dispositivos en línea",
+   "id": 3,
+   "datasource": {
+    "type": "grafana-postgresql-datasource",
+    "uid": "granja-bd"
+   },
+   "gridPos": {
+    "h": 4,
+    "w": 4,
+    "x": 0,
+    "y": 1
+   },
+   "targets": [
+    {
+     "datasource": {
+      "type": "grafana-postgresql-datasource",
+      "uid": "granja-bd"
+     },
+     "refId": "A",
+     "rawQuery": true,
+     "editorMode": "code",
+     "format": "table",
+     "rawSql": "SELECT count(*) FILTER (WHERE en_linea) AS en_linea FROM dispositivos"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "",
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "#B3261E",
+        "value": null
+       },
+       {
+        "color": "#F4B23E",
+        "value": 10
+       },
+       {
+        "color": "#1E5B43",
+        "value": 12
+       }
+      ]
+     },
+     "color": {
+      "mode": "thresholds"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ],
+     "fields": ""
+    },
+    "colorMode": "background",
+    "graphMode": "none",
+    "textMode": "value"
+   }
+  },
+  {
+   "type": "stat",
+   "title": "Alertas activas",
+   "id": 4,
+   "datasource": {
+    "type": "grafana-postgresql-datasource",
+    "uid": "granja-bd"
+   },
+   "gridPos": {
+    "h": 4,
+    "w": 4,
+    "x": 4,
+    "y": 1
+   },
+   "targets": [
+    {
+     "datasource": {
+      "type": "grafana-postgresql-datasource",
+      "uid": "granja-bd"
+     },
+     "refId": "A",
+     "rawQuery": true,
+     "editorMode": "code",
+     "format": "table",
+     "rawSql": "SELECT count(*) AS activas FROM alertas WHERE fin IS NULL"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "",
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "#1E5B43",
+        "value": null
+       },
+       {
+        "color": "#F4B23E",
+        "value": 1
+       },
+       {
+        "color": "#B3261E",
+        "value": 3
+       }
+      ]
+     },
+     "color": {
+      "mode": "thresholds"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ],
+     "fields": ""
+    },
+    "colorMode": "background",
+    "graphMode": "none",
+    "textMode": "value"
+   }
+  },
+  {
+   "type": "stat",
+   "title": "Temperatura galpón",
+   "id": 5,
+   "datasource": {
+    "type": "grafana-postgresql-datasource",
+    "uid": "granja-bd"
+   },
+   "gridPos": {
+    "h": 4,
+    "w": 4,
+    "x": 8,
+    "y": 1
+   },
+   "targets": [
+    {
+     "datasource": {
+      "type": "grafana-postgresql-datasource",
+      "uid": "granja-bd"
+     },
+     "refId": "A",
+     "rawQuery": true,
+     "editorMode": "code",
+     "format": "table",
+     "rawSql": "SELECT ts AS time, valor FROM lecturas WHERE dispositivo = 'galpon1-ambiente' AND variable = 'temperatura' AND ts > now() - interval '1 day' ORDER BY ts DESC LIMIT 1"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "celsius",
+     "decimals": 1,
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "#3A6EA5",
+        "value": null
+       },
+       {
+        "color": "#1E5B43",
+        "value": 20
+       },
+       {
+        "color": "#F4B23E",
+        "value": 30
+       },
+       {
+        "color": "#B3261E",
+        "value": 33
+       }
+      ]
+     },
+     "color": {
+      "mode": "thresholds"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ],
+     "fields": "/^valor$/"
+    },
+    "colorMode": "background",
+    "graphMode": "none",
+    "textMode": "value"
+   }
+  },
+  {
+   "type": "stat",
+   "title": "Amoníaco",
+   "id": 6,
+   "datasource": {
+    "type": "grafana-postgresql-datasource",
+    "uid": "granja-bd"
+   },
+   "gridPos": {
+    "h": 4,
+    "w": 4,
+    "x": 12,
+    "y": 1
+   },
+   "targets": [
+    {
+     "datasource": {
+      "type": "grafana-postgresql-datasource",
+      "uid": "granja-bd"
+     },
+     "refId": "A",
+     "rawQuery": true,
+     "editorMode": "code",
+     "format": "table",
+     "rawSql": "SELECT ts AS time, valor FROM lecturas WHERE dispositivo = 'galpon1-gases' AND variable = 'amoniaco' AND ts > now() - interval '1 day' ORDER BY ts DESC LIMIT 1"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "ppm",
+     "decimals": 1,
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "#1E5B43",
+        "value": null
+       },
+       {
+        "color": "#F4B23E",
+        "value": 20
+       },
+       {
+        "color": "#B3261E",
+        "value": 25
+       }
+      ]
+     },
+     "color": {
+      "mode": "thresholds"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ],
+     "fields": "/^valor$/"
+    },
+    "colorMode": "background",
+    "graphMode": "none",
+    "textMode": "value"
+   }
+  },
+  {
+   "type": "stat",
+   "title": "Postura hoy",
+   "id": 7,
+   "datasource": {
+    "type": "grafana-postgresql-datasource",
+    "uid": "granja-bd"
+   },
+   "gridPos": {
+    "h": 4,
+    "w": 4,
+    "x": 16,
+    "y": 1
+   },
+   "targets": [
+    {
+     "datasource": {
+      "type": "grafana-postgresql-datasource",
+      "uid": "granja-bd"
+     },
+     "refId": "A",
+     "rawQuery": true,
+     "editorMode": "code",
+     "format": "table",
+     "rawSql": "SELECT ts AS time, valor FROM lecturas WHERE dispositivo = 'contador-huevos' AND variable = 'postura' AND ts > now() - interval '1 day' ORDER BY ts DESC LIMIT 1"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "percent",
+     "decimals": 1,
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "#B3261E",
+        "value": null
+       },
+       {
+        "color": "#F4B23E",
+        "value": 85
+       },
+       {
+        "color": "#1E5B43",
+        "value": 90
+       }
+      ]
+     },
+     "color": {
+      "mode": "thresholds"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ],
+     "fields": "/^valor$/"
+    },
+    "colorMode": "background",
+    "graphMode": "none",
+    "textMode": "value"
+   }
+  },
+  {
+   "type": "stat",
+   "title": "Silo",
+   "id": 8,
+   "datasource": {
+    "type": "grafana-postgresql-datasource",
+    "uid": "granja-bd"
+   },
+   "gridPos": {
+    "h": 4,
+    "w": 4,
+    "x": 20,
+    "y": 1
+   },
+   "targets": [
+    {
+     "datasource": {
+      "type": "grafana-postgresql-datasource",
+      "uid": "granja-bd"
+     },
+     "refId": "A",
+     "rawQuery": true,
+     "editorMode": "code",
+     "format": "table",
+     "rawSql": "SELECT ts AS time, valor FROM lecturas WHERE dispositivo = 'silo-alimento' AND variable = 'bultos' AND ts > now() - interval '1 day' ORDER BY ts DESC LIMIT 1"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "none",
+     "decimals": 0,
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "#B3261E",
+        "value": null
+       },
+       {
+        "color": "#F4B23E",
+        "value": 30
+       },
+       {
+        "color": "#1E5B43",
+        "value": 50
+       }
+      ]
+     },
+     "color": {
+      "mode": "thresholds"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ],
+     "fields": "/^valor$/"
+    },
+    "colorMode": "background",
+    "graphMode": "none",
+    "textMode": "value"
+   }
+  },
+  {
+   "type": "row",
+   "title": "Ambiente del galpón 1",
+   "id": 9,
+   "collapsed": false,
+   "gridPos": {
+    "h": 1,
+    "w": 24,
+    "x": 0,
+    "y": 5
+   },
+   "panels": []
+  },
+  {
+   "type": "timeseries",
+   "title": "Temperatura dentro y fuera",
+   "id": 10,
+   "datasource": {
+    "type": "grafana-postgresql-datasource",
+    "uid": "granja-bd"
+   },
+   "description": "El galpón sigue al clima exterior con unos grados más por el calor de las aves.",
+   "gridPos": {
+    "h": 9,
+    "w": 12,
+    "x": 0,
+    "y": 6
+   },
+   "targets": [
+    {
+     "datasource": {
+      "type": "grafana-postgresql-datasource",
+      "uid": "granja-bd"
+     },
+     "refId": "A",
+     "rawQuery": true,
+     "editorMode": "code",
+     "format": "time_series",
+     "rawSql": "SELECT $__timeGroupAlias(ts, $__interval), avg(valor) AS \"Galpón 1\" FROM lecturas WHERE dispositivo = 'galpon1-ambiente' AND variable = 'temperatura' AND $__timeFilter(ts) GROUP BY 1 ORDER BY 1"
+    },
+    {
+     "datasource": {
+      "type": "grafana-postgresql-datasource",
+      "uid": "granja-bd"
+     },
+     "refId": "B",
+     "rawQuery": true,
+     "editorMode": "code",
+     "format": "time_series",
+     "rawSql": "SELECT $__timeGroupAlias(ts, $__interval), avg(valor) AS \"Exterior (Open-Meteo)\" FROM lecturas WHERE dispositivo = 'clima-openmeteo' AND variable = 'temperatura' AND $__timeFilter(ts) GROUP BY 1 ORDER BY 1"
+    },
+    {
+     "datasource": {
+      "type": "grafana-postgresql-datasource",
+      "uid": "granja-bd"
+     },
+     "refId": "C",
+     "rawQuery": true,
+     "editorMode": "code",
+     "format": "time_series",
+     "rawSql": "SELECT $__timeGroupAlias(ts, $__interval), avg(valor) AS \"Galpón 2 (ESP32)\" FROM lecturas WHERE dispositivo = 'galpon2-ambiente' AND variable = 'temperatura' AND $__timeFilter(ts) GROUP BY 1 ORDER BY 1"
+    },
+    {
+     "datasource": {
+      "type": "grafana-postgresql-datasource",
+      "uid": "granja-bd"
+     },
+     "refId": "D",
+     "rawQuery": true,
+     "editorMode": "code",
+     "format": "time_series",
+     "rawSql": "SELECT $__timeGroupAlias(ts, $__interval), min(valor) AS \"Mínimo galpón 1\" FROM lecturas WHERE dispositivo = 'galpon1-ambiente' AND variable = 'temperatura' AND $__timeFilter(ts) GROUP BY 1 ORDER BY 1"
+    },
+    {
+     "datasource": {
+      "type": "grafana-postgresql-datasource",
+      "uid": "granja-bd"
+     },
+     "refId": "E",
+     "rawQuery": true,
+     "editorMode": "code",
+     "format": "time_series",
+     "rawSql": "SELECT $__timeGroupAlias(ts, $__interval), max(valor) AS \"Máximo galpón 1\" FROM lecturas WHERE dispositivo = 'galpon1-ambiente' AND variable = 'temperatura' AND $__timeFilter(ts) GROUP BY 1 ORDER BY 1"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "celsius",
+     "custom": {
+      "lineWidth": 2,
+      "fillOpacity": 8,
+      "spanNulls": 600000,
+      "showPoints": "never",
+      "thresholdsStyle": {
+       "mode": "dashed"
+      },
+      "stacking": {
+       "mode": "none"
+      }
+     },
+     "color": {
+      "mode": "palette-classic"
+     },
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "#1E5B43",
+        "value": null
+       },
+       {
+        "color": "#F4B23E",
+        "value": 30
+       },
+       {
+        "color": "#B3261E",
+        "value": 33
+       }
+      ]
+     }
+    },
+    "overrides": [
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "Galpón 1"
+      },
+      "properties": [
+       {
+        "id": "color",
+        "value": {
+         "mode": "fixed",
+         "fixedColor": "#1E5B43"
+        }
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "Exterior (Open-Meteo)"
+      },
+      "properties": [
+       {
+        "id": "color",
+        "value": {
+         "mode": "fixed",
+         "fixedColor": "#3A6EA5"
+        }
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "Galpón 2 (ESP32)"
+      },
+      "properties": [
+       {
+        "id": "color",
+        "value": {
+         "mode": "fixed",
+         "fixedColor": "#7A4FA0"
+        }
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "Mínimo galpón 1"
+      },
+      "properties": [
+       {
+        "id": "custom.lineStyle",
+        "value": {
+         "fill": "dash",
+         "dash": [
+          4,
+          4
+         ]
+        }
+       },
+       {
+        "id": "custom.lineWidth",
+        "value": 1
+       },
+       {
+        "id": "color",
+        "value": {
+         "mode": "fixed",
+         "fixedColor": "#8A8F8C"
+        }
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "Máximo galpón 1"
+      },
+      "properties": [
+       {
+        "id": "custom.lineStyle",
+        "value": {
+         "fill": "dash",
+         "dash": [
+          4,
+          4
+         ]
+        }
+       },
+       {
+        "id": "custom.lineWidth",
+        "value": 1
+       },
+       {
+        "id": "color",
+        "value": {
+         "mode": "fixed",
+         "fixedColor": "#8A8F8C"
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "options": {
+    "legend": {
+     "displayMode": "table",
+     "placement": "bottom",
+     "calcs": [
+      "mean",
+      "min",
+      "max",
+      "lastNotNull"
+     ]
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "none"
+    }
+   }
+  },
+  {
+   "type": "timeseries",
+   "title": "Humedad relativa",
+   "id": 11,
+   "datasource": {
+    "type": "grafana-postgresql-datasource",
+    "uid": "granja-bd"
+   },
+   "description": "",
+   "gridPos": {
+    "h": 9,
+    "w": 6,
+    "x": 12,
+    "y": 6
+   },
+   "targets": [
+    {
+     "datasource": {
+      "type": "grafana-postgresql-datasource",
+      "uid": "granja-bd"
+     },
+     "refId": "A",
+     "rawQuery": true,
+     "editorMode": "code",
+     "format": "time_series",
+     "rawSql": "SELECT $__timeGroupAlias(ts, $__interval), avg(valor) AS \"Galpón 1\" FROM lecturas WHERE dispositivo = 'galpon1-ambiente' AND variable = 'humedad' AND $__timeFilter(ts) GROUP BY 1 ORDER BY 1"
+    },
+    {
+     "datasource": {
+      "type": "grafana-postgresql-datasource",
+      "uid": "granja-bd"
+     },
+     "refId": "B",
+     "rawQuery": true,
+     "editorMode": "code",
+     "format": "time_series",
+     "rawSql": "SELECT $__timeGroupAlias(ts, $__interval), avg(valor) AS \"Exterior\" FROM lecturas WHERE dispositivo = 'clima-openmeteo' AND variable = 'humedad' AND $__timeFilter(ts) GROUP BY 1 ORDER BY 1"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "percent",
+     "custom": {
+      "lineWidth": 2,
+      "fillOpacity": 8,
+      "spanNulls": 600000,
+      "showPoints": "never",
+      "thresholdsStyle": {
+       "mode": "dashed"
+      },
+      "stacking": {
+       "mode": "none"
+      }
+     },
+     "color": {
+      "mode": "palette-classic"
+     },
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "#1E5B43",
+        "value": null
+       },
+       {
+        "color": "#F4B23E",
+        "value": 85
+       }
+      ]
+     }
+    },
+    "overrides": [
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "Galpón 1"
+      },
+      "properties": [
+       {
+        "id": "color",
+        "value": {
+         "mode": "fixed",
+         "fixedColor": "#1E5B43"
+        }
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "Exterior"
+      },
+      "properties": [
+       {
+        "id": "color",
+        "value": {
+         "mode": "fixed",
+         "fixedColor": "#3A6EA5"
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "options": {
+    "legend": {
+     "displayMode": "table",
+     "placement": "bottom",
+     "calcs": [
+      "mean",
+      "min",
+      "max",
+      "lastNotNull"
+     ]
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "none"
+    }
+   }
+  },
+  {
+   "type": "timeseries",
+   "title": "Índice temperatura-humedad (THI)",
+   "id": 12,
+   "datasource": {
+    "type": "grafana-postgresql-datasource",
+    "uid": "granja-bd"
+   },
+   "description": "Bajo 72 sin estrés, 72-79 estrés leve, sobre 79 estrés fuerte.",
+   "gridPos": {
+    "h": 9,
+    "w": 6,
+    "x": 18,
+    "y": 6
+   },
+   "targets": [
+    {
+     "datasource": {
+      "type": "grafana-postgresql-datasource",
+      "uid": "granja-bd"
+     },
+     "refId": "A",
+     "rawQuery": true,
+     "editorMode": "code",
+     "format": "time_series",
+     "rawSql": "SELECT $__timeGroupAlias(ts, $__interval), avg(valor) AS \"THI\" FROM lecturas WHERE dispositivo = 'galpon1-ambiente' AND variable = 'indice_thi' AND $__timeFilter(ts) GROUP BY 1 ORDER BY 1"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "none",
+     "custom": {
+      "lineWidth": 2,
+      "fillOpacity": 8,
+      "spanNulls": 600000,
+      "showPoints": "never",
+      "thresholdsStyle": {
+       "mode": "dashed"
+      },
+      "stacking": {
+       "mode": "none"
+      }
+     },
+     "color": {
+      "mode": "palette-classic"
+     },
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "#1E5B43",
+        "value": null
+       },
+       {
+        "color": "#F4B23E",
+        "value": 72
+       },
+       {
+        "color": "#B3261E",
+        "value": 79
+       }
+      ]
+     }
+    },
+    "overrides": [
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "THI"
+      },
+      "properties": [
+       {
+        "id": "color",
+        "value": {
+         "mode": "fixed",
+         "fixedColor": "#F4B23E"
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "options": {
+    "legend": {
+     "displayMode": "table",
+     "placement": "bottom",
+     "calcs": [
+      "mean",
+      "min",
+      "max",
+      "lastNotNull"
+     ]
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "none"
+    }
+   }
+  },
+  {
+   "type": "timeseries",
+   "title": "Amoníaco y CO2",
+   "id": 13,
+   "datasource": {
+    "type": "grafana-postgresql-datasource",
+    "uid": "granja-bd"
+   },
+   "description": "",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 0,
+    "y": 15
+   },
+   "targets": [
+    {
+     "datasource": {
+      "type": "grafana-postgresql-datasource",
+      "uid": "granja-bd"
+     },
+     "refId": "A",
+     "rawQuery": true,
+     "editorMode": "code",
+     "format": "time_series",
+     "rawSql": "SELECT $__timeGroupAlias(ts, $__interval), avg(valor) AS \"Amoníaco (ppm)\" FROM lecturas WHERE dispositivo = 'galpon1-gases' AND variable = 'amoniaco' AND $__timeFilter(ts) GROUP BY 1 ORDER BY 1"
+    },
+    {
+     "datasource": {
+      "type": "grafana-postgresql-datasource",
+      "uid": "granja-bd"
+     },
+     "refId": "B",
+     "rawQuery": true,
+     "editorMode": "code",
+     "format": "time_series",
+     "rawSql": "SELECT $__timeGroupAlias(ts, $__interval), min(valor) AS \"Mínimo amoníaco (ppm)\" FROM lecturas WHERE dispositivo = 'galpon1-gases' AND variable = 'amoniaco' AND $__timeFilter(ts) GROUP BY 1 ORDER BY 1"
+    },
+    {
+     "datasource": {
+      "type": "grafana-postgresql-datasource",
+      "uid": "granja-bd"
+     },
+     "refId": "C",
+     "rawQuery": true,
+     "editorMode": "code",
+     "format": "time_series",
+     "rawSql": "SELECT $__timeGroupAlias(ts, $__interval), max(valor) AS \"Máximo amoníaco (ppm)\" FROM lecturas WHERE dispositivo = 'galpon1-gases' AND variable = 'amoniaco' AND $__timeFilter(ts) GROUP BY 1 ORDER BY 1"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "ppm",
+     "custom": {
+      "lineWidth": 2,
+      "fillOpacity": 8,
+      "spanNulls": 600000,
+      "showPoints": "never",
+      "thresholdsStyle": {
+       "mode": "dashed"
+      },
+      "stacking": {
+       "mode": "none"
+      }
+     },
+     "color": {
+      "mode": "palette-classic"
+     },
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "#1E5B43",
+        "value": null
+       },
+       {
+        "color": "#F4B23E",
+        "value": 20
+       },
+       {
+        "color": "#B3261E",
+        "value": 25
+       }
+      ]
+     }
+    },
+    "overrides": [
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "Amoníaco (ppm)"
+      },
+      "properties": [
+       {
+        "id": "color",
+        "value": {
+         "mode": "fixed",
+         "fixedColor": "#7A4FA0"
+        }
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "Mínimo amoníaco (ppm)"
+      },
+      "properties": [
+       {
+        "id": "custom.lineStyle",
+        "value": {
+         "fill": "dash",
+         "dash": [
+          4,
+          4
+         ]
+        }
+       },
+       {
+        "id": "custom.lineWidth",
+        "value": 1
+       },
+       {
+        "id": "color",
+        "value": {
+         "mode": "fixed",
+         "fixedColor": "#8A8F8C"
+        }
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "Máximo amoníaco (ppm)"
+      },
+      "properties": [
+       {
+        "id": "custom.lineStyle",
+        "value": {
+         "fill": "dash",
+         "dash": [
+          4,
+          4
+         ]
+        }
+       },
+       {
+        "id": "custom.lineWidth",
+        "value": 1
+       },
+       {
+        "id": "color",
+        "value": {
+         "mode": "fixed",
+         "fixedColor": "#8A8F8C"
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "options": {
+    "legend": {
+     "displayMode": "table",
+     "placement": "bottom",
+     "calcs": [
+      "mean",
+      "min",
+      "max",
+      "lastNotNull"
+     ]
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "none"
+    }
+   }
+  },
+  {
+   "type": "timeseries",
+   "title": "CO2",
+   "id": 14,
+   "datasource": {
+    "type": "grafana-postgresql-datasource",
+    "uid": "granja-bd"
+   },
+   "description": "",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 8,
+    "y": 15
+   },
+   "targets": [
+    {
+     "datasource": {
+      "type": "grafana-postgresql-datasource",
+      "uid": "granja-bd"
+     },
+     "refId": "A",
+     "rawQuery": true,
+     "editorMode": "code",
+     "format": "time_series",
+     "rawSql": "SELECT $__timeGroupAlias(ts, $__interval), avg(valor) AS \"CO2 (ppm)\" FROM lecturas WHERE dispositivo = 'galpon1-gases' AND variable = 'co2' AND $__timeFilter(ts) GROUP BY 1 ORDER BY 1"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "ppm",
+     "custom": {
+      "lineWidth": 2,
+      "fillOpacity": 8,
+      "spanNulls": 600000,
+      "showPoints": "never",
+      "thresholdsStyle": {
+       "mode": "dashed"
+      },
+      "stacking": {
+       "mode": "none"
+      }
+     },
+     "color": {
+      "mode": "palette-classic"
+     },
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "#1E5B43",
+        "value": null
+       },
+       {
+        "color": "#F4B23E",
+        "value": 3000
+       }
+      ]
+     }
+    },
+    "overrides": [
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "CO2 (ppm)"
+      },
+      "properties": [
+       {
+        "id": "color",
+        "value": {
+         "mode": "fixed",
+         "fixedColor": "#8A8F8C"
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "options": {
+    "legend": {
+     "displayMode": "table",
+     "placement": "bottom",
+     "calcs": [
+      "mean",
+      "min",
+      "max",
+      "lastNotNull"
+     ]
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "none"
+    }
+   }
+  },
+  {
+   "type": "timeseries",
+   "title": "Ventiladores",
+   "id": 15,
+   "datasource": {
+    "type": "grafana-postgresql-datasource",
+    "uid": "granja-bd"
+   },
+   "description": "En automático suben con la temperatura y con el amoníaco. Bajan a 0 en los cortes de luz.",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 16,
+    "y": 15
+   },
+   "targets": [
+    {
+     "datasource": {
+      "type": "grafana-postgresql-datasource",
+      "uid": "granja-bd"
+     },
+     "refId": "A",
+     "rawQuery": true,
+     "editorMode": "code",
+     "format": "time_series",
+     "rawSql": "SELECT $__timeGroupAlias(ts, $__interval), avg(valor) AS \"Velocidad (%)\" FROM lecturas WHERE dispositivo = 'galpon1-ventilacion' AND variable = 'velocidad' AND $__timeFilter(ts) GROUP BY 1 ORDER BY 1"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "percent",
+     "custom": {
+      "lineWidth": 2,
+      "fillOpacity": 8,
+      "spanNulls": 600000,
+      "showPoints": "never",
+      "thresholdsStyle": {
+       "mode": "off"
+      },
+      "stacking": {
+       "mode": "none"
+      }
+     },
+     "color": {
+      "mode": "palette-classic"
+     }
+    },
+    "overrides": [
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "Velocidad (%)"
+      },
+      "properties": [
+       {
+        "id": "color",
+        "value": {
+         "mode": "fixed",
+         "fixedColor": "#1E5B43"
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "options": {
+    "legend": {
+     "displayMode": "table",
+     "placement": "bottom",
+     "calcs": [
+      "mean",
+      "min",
+      "max",
+      "lastNotNull"
+     ]
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "none"
+    }
+   }
+  },
+  {
+   "type": "row",
+   "title": "Agua, alimento y energía",
+   "id": 16,
+   "collapsed": false,
+   "gridPos": {
+    "h": 1,
+    "w": 24,
+    "x": 0,
+    "y": 23
+   },
+   "panels": []
+  },
+  {
+   "type": "timeseries",
+   "title": "Tanque de agua",
+   "id": 17,
+   "datasource": {
+    "type": "grafana-postgresql-datasource",
+    "uid": "granja-bd"
+   },
+   "description": "La bomba arranca bajo el umbral y para al 95 %.",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 0,
+    "y": 24
+   },
+   "targets": [
+    {
+     "datasource": {
+      "type": "grafana-postgresql-datasource",
+      "uid": "granja-bd"
+     },
+     "refId": "A",
+     "rawQuery": true,
+     "editorMode": "code",
+     "format": "time_series",
+     "rawSql": "SELECT $__timeGroupAlias(ts, $__interval), avg(valor) AS \"Nivel (%)\" FROM lecturas WHERE dispositivo = 'tanque-agua' AND variable = 'nivel' AND $__timeFilter(ts) GROUP BY 1 ORDER BY 1"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "percent",
+     "custom": {
+      "lineWidth": 2,
+      "fillOpacity": 8,
+      "spanNulls": 600000,
+      "showPoints": "never",
+      "thresholdsStyle": {
+       "mode": "dashed"
+      },
+      "stacking": {
+       "mode": "none"
+      }
+     },
+     "color": {
+      "mode": "palette-classic"
+     },
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "#B3261E",
+        "value": null
+       },
+       {
+        "color": "#F4B23E",
+        "value": 20
+       },
+       {
+        "color": "#1E5B43",
+        "value": 35
+       }
+      ]
+     }
+    },
+    "overrides": [
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "Nivel (%)"
+      },
+      "properties": [
+       {
+        "id": "color",
+        "value": {
+         "mode": "fixed",
+         "fixedColor": "#3A6EA5"
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "options": {
+    "legend": {
+     "displayMode": "table",
+     "placement": "bottom",
+     "calcs": [
+      "mean",
+      "min",
+      "max",
+      "lastNotNull"
+     ]
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "none"
+    }
+   }
+  },
+  {
+   "type": "timeseries",
+   "title": "Consumo de agua",
+   "id": 18,
+   "datasource": {
+    "type": "grafana-postgresql-datasource",
+    "uid": "granja-bd"
+   },
+   "description": "",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 8,
+    "y": 24
+   },
+   "targets": [
+    {
+     "datasource": {
+      "type": "grafana-postgresql-datasource",
+      "uid": "granja-bd"
+     },
+     "refId": "A",
+     "rawQuery": true,
+     "editorMode": "code",
+     "format": "time_series",
+     "rawSql": "SELECT $__timeGroupAlias(ts, $__interval), avg(valor) AS \"Caudal (L/min)\" FROM lecturas WHERE dispositivo = 'tanque-agua' AND variable = 'caudal' AND $__timeFilter(ts) GROUP BY 1 ORDER BY 1"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "none",
+     "custom": {
+      "lineWidth": 2,
+      "fillOpacity": 8,
+      "spanNulls": 600000,
+      "showPoints": "never",
+      "thresholdsStyle": {
+       "mode": "off"
+      },
+      "stacking": {
+       "mode": "none"
+      }
+     },
+     "color": {
+      "mode": "palette-classic"
+     }
+    },
+    "overrides": [
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "Caudal (L/min)"
+      },
+      "properties": [
+       {
+        "id": "color",
+        "value": {
+         "mode": "fixed",
+         "fixedColor": "#3A6EA5"
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "options": {
+    "legend": {
+     "displayMode": "table",
+     "placement": "bottom",
+     "calcs": [
+      "mean",
+      "min",
+      "max",
+      "lastNotNull"
+     ]
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "none"
+    }
+   }
+  },
+  {
+   "type": "timeseries",
+   "title": "Silo de alimento",
+   "id": 19,
+   "datasource": {
+    "type": "grafana-postgresql-datasource",
+    "uid": "granja-bd"
+   },
+   "description": "",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 16,
+    "y": 24
+   },
+   "targets": [
+    {
+     "datasource": {
+      "type": "grafana-postgresql-datasource",
+      "uid": "granja-bd"
+     },
+     "refId": "A",
+     "rawQuery": true,
+     "editorMode": "code",
+     "format": "time_series",
+     "rawSql": "SELECT $__timeGroupAlias(ts, $__interval), avg(valor) AS \"Nivel (kg)\" FROM lecturas WHERE dispositivo = 'silo-alimento' AND variable = 'nivel' AND $__timeFilter(ts) GROUP BY 1 ORDER BY 1"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "masskg",
+     "custom": {
+      "lineWidth": 2,
+      "fillOpacity": 8,
+      "spanNulls": 600000,
+      "showPoints": "never",
+      "thresholdsStyle": {
+       "mode": "dashed"
+      },
+      "stacking": {
+       "mode": "none"
+      }
+     },
+     "color": {
+      "mode": "palette-classic"
+     },
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "#B3261E",
+        "value": null
+       },
+       {
+        "color": "#F4B23E",
+        "value": 1200
+       },
+       {
+        "color": "#1E5B43",
+        "value": 2000
+       }
+      ]
+     }
+    },
+    "overrides": [
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "Nivel (kg)"
+      },
+      "properties": [
+       {
+        "id": "color",
+        "value": {
+         "mode": "fixed",
+         "fixedColor": "#F4B23E"
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "options": {
+    "legend": {
+     "displayMode": "table",
+     "placement": "bottom",
+     "calcs": [
+      "mean",
+      "min",
+      "max",
+      "lastNotNull"
+     ]
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "none"
+    }
+   }
+  },
+  {
+   "type": "timeseries",
+   "title": "Potencia de la finca",
+   "id": 20,
+   "datasource": {
+    "type": "grafana-postgresql-datasource",
+    "uid": "granja-bd"
+   },
+   "description": "",
+   "gridPos": {
+    "h": 8,
+    "w": 12,
+    "x": 0,
+    "y": 32
+   },
+   "targets": [
+    {
+     "datasource": {
+      "type": "grafana-postgresql-datasource",
+      "uid": "granja-bd"
+     },
+     "refId": "A",
+     "rawQuery": true,
+     "editorMode": "code",
+     "format": "time_series",
+     "rawSql": "SELECT $__timeGroupAlias(ts, $__interval), avg(valor) AS \"Potencia (kW)\" FROM lecturas WHERE dispositivo = 'tablero-energia' AND variable = 'potencia' AND $__timeFilter(ts) GROUP BY 1 ORDER BY 1"
+    },
+    {
+     "datasource": {
+      "type": "grafana-postgresql-datasource",
+      "uid": "granja-bd"
+     },
+     "refId": "B",
+     "rawQuery": true,
+     "editorMode": "code",
+     "format": "time_series",
+     "rawSql": "SELECT $__timeGroupAlias(ts, $__interval), min(valor) AS \"Mínimo potencia (kw)\" FROM lecturas WHERE dispositivo = 'tablero-energia' AND variable = 'potencia' AND $__timeFilter(ts) GROUP BY 1 ORDER BY 1"
+    },
+    {
+     "datasource": {
+      "type": "grafana-postgresql-datasource",
+      "uid": "granja-bd"
+     },
+     "refId": "C",
+     "rawQuery": true,
+     "editorMode": "code",
+     "format": "time_series",
+     "rawSql": "SELECT $__timeGroupAlias(ts, $__interval), max(valor) AS \"Máximo potencia (kw)\" FROM lecturas WHERE dispositivo = 'tablero-energia' AND variable = 'potencia' AND $__timeFilter(ts) GROUP BY 1 ORDER BY 1"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "kwatt",
+     "custom": {
+      "lineWidth": 2,
+      "fillOpacity": 8,
+      "spanNulls": 600000,
+      "showPoints": "never",
+      "thresholdsStyle": {
+       "mode": "off"
+      },
+      "stacking": {
+       "mode": "none"
+      }
+     },
+     "color": {
+      "mode": "palette-classic"
+     }
+    },
+    "overrides": [
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "Potencia (kW)"
+      },
+      "properties": [
+       {
+        "id": "color",
+        "value": {
+         "mode": "fixed",
+         "fixedColor": "#F4B23E"
+        }
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "Mínimo potencia (kw)"
+      },
+      "properties": [
+       {
+        "id": "custom.lineStyle",
+        "value": {
+         "fill": "dash",
+         "dash": [
+          4,
+          4
+         ]
+        }
+       },
+       {
+        "id": "custom.lineWidth",
+        "value": 1
+       },
+       {
+        "id": "color",
+        "value": {
+         "mode": "fixed",
+         "fixedColor": "#8A8F8C"
+        }
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "Máximo potencia (kw)"
+      },
+      "properties": [
+       {
+        "id": "custom.lineStyle",
+        "value": {
+         "fill": "dash",
+         "dash": [
+          4,
+          4
+         ]
+        }
+       },
+       {
+        "id": "custom.lineWidth",
+        "value": 1
+       },
+       {
+        "id": "color",
+        "value": {
+         "mode": "fixed",
+         "fixedColor": "#8A8F8C"
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "options": {
+    "legend": {
+     "displayMode": "table",
+     "placement": "bottom",
+     "calcs": [
+      "mean",
+      "min",
+      "max",
+      "lastNotNull"
+     ]
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "none"
+    }
+   }
+  },
+  {
+   "type": "timeseries",
+   "title": "Voltaje",
+   "id": 21,
+   "datasource": {
+    "type": "grafana-postgresql-datasource",
+    "uid": "granja-bd"
+   },
+   "description": "",
+   "gridPos": {
+    "h": 8,
+    "w": 6,
+    "x": 12,
+    "y": 32
+   },
+   "targets": [
+    {
+     "datasource": {
+      "type": "grafana-postgresql-datasource",
+      "uid": "granja-bd"
+     },
+     "refId": "A",
+     "rawQuery": true,
+     "editorMode": "code",
+     "format": "time_series",
+     "rawSql": "SELECT $__timeGroupAlias(ts, $__interval), avg(valor) AS \"Voltaje (V)\" FROM lecturas WHERE dispositivo = 'tablero-energia' AND variable = 'voltaje' AND $__timeFilter(ts) GROUP BY 1 ORDER BY 1"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "volt",
+     "custom": {
+      "lineWidth": 2,
+      "fillOpacity": 8,
+      "spanNulls": 600000,
+      "showPoints": "never",
+      "thresholdsStyle": {
+       "mode": "dashed"
+      },
+      "stacking": {
+       "mode": "none"
+      }
+     },
+     "color": {
+      "mode": "palette-classic"
+     },
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "#B3261E",
+        "value": null
+       },
+       {
+        "color": "#1E5B43",
+        "value": 100
+       }
+      ]
+     }
+    },
+    "overrides": [
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "Voltaje (V)"
+      },
+      "properties": [
+       {
+        "id": "color",
+        "value": {
+         "mode": "fixed",
+         "fixedColor": "#1E5B43"
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "options": {
+    "legend": {
+     "displayMode": "table",
+     "placement": "bottom",
+     "calcs": [
+      "mean",
+      "min",
+      "max",
+      "lastNotNull"
+     ]
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "none"
+    }
+   }
+  },
+  {
+   "type": "state-timeline",
+   "title": "Red, luces y bomba",
+   "id": 22,
+   "datasource": {
+    "type": "grafana-postgresql-datasource",
+    "uid": "granja-bd"
+   },
+   "gridPos": {
+    "h": 8,
+    "w": 6,
+    "x": 18,
+    "y": 32
+   },
+   "targets": [
+    {
+     "datasource": {
+      "type": "grafana-postgresql-datasource",
+      "uid": "granja-bd"
+     },
+     "refId": "A",
+     "rawQuery": true,
+     "editorMode": "code",
+     "format": "time_series",
+     "rawSql": "SELECT $__timeGroupAlias(ts, $__interval), min(valor) AS \"Red eléctrica\" FROM lecturas WHERE dispositivo = 'tablero-energia' AND variable = 'red' AND $__timeFilter(ts) GROUP BY 1 ORDER BY 1"
+    },
+    {
+     "datasource": {
+      "type": "grafana-postgresql-datasource",
+      "uid": "granja-bd"
+     },
+     "refId": "B",
+     "rawQuery": true,
+     "editorMode": "code",
+     "format": "time_series",
+     "rawSql": "SELECT $__timeGroupAlias(ts, $__interval), min(valor) AS \"Luces\" FROM lecturas WHERE dispositivo = 'galpon1-iluminacion' AND variable = 'luces' AND $__timeFilter(ts) GROUP BY 1 ORDER BY 1"
+    },
+    {
+     "datasource": {
+      "type": "grafana-postgresql-datasource",
+      "uid": "granja-bd"
+     },
+     "refId": "C",
+     "rawQuery": true,
+     "editorMode": "code",
+     "format": "time_series",
+     "rawSql": "SELECT $__timeGroupAlias(ts, $__interval), min(valor) AS \"Bomba\" FROM lecturas WHERE dispositivo = 'tanque-agua' AND variable = 'bomba' AND $__timeFilter(ts) GROUP BY 1 ORDER BY 1"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "color": {
+      "mode": "thresholds"
+     },
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "#B3261E",
+        "value": null
+       },
+       {
+        "color": "#1E5B43",
+        "value": 0.5
+       }
+      ]
+     },
+     "mappings": [
+      {
+       "type": "range",
+       "options": {
+        "from": 0.5,
+        "to": 1.5,
+        "result": {
+         "text": "Sí"
+        }
+       }
+      },
+      {
+       "type": "range",
+       "options": {
+        "from": -0.5,
+        "to": 0.5,
+        "result": {
+         "text": "No"
+        }
+       }
+      }
+     ]
+    },
+    "overrides": []
+   },
+   "options": {
+    "showValue": "never",
+    "mergeValues": true,
+    "rowHeight": 0.8
+   }
+  },
+  {
+   "type": "row",
+   "title": "Producción",
+   "id": 23,
+   "collapsed": false,
+   "gridPos": {
+    "h": 1,
+    "w": 24,
+    "x": 0,
+    "y": 40
+   },
+   "panels": []
+  },
+  {
+   "type": "timeseries",
+   "title": "Huevos por hora",
+   "id": 24,
+   "datasource": {
+    "type": "grafana-postgresql-datasource",
+    "uid": "granja-bd"
+   },
+   "description": "Casi toda la postura ocurre en las primeras horas después de encender las luces.",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 0,
+    "y": 41
+   },
+   "targets": [
+    {
+     "datasource": {
+      "type": "grafana-postgresql-datasource",
+      "uid": "granja-bd"
+     },
+     "refId": "A",
+     "rawQuery": true,
+     "editorMode": "code",
+     "format": "time_series",
+     "rawSql": "SELECT $__timeGroupAlias(ts, $__interval), avg(valor) AS \"Huevos por hora\" FROM lecturas WHERE dispositivo = 'contador-huevos' AND variable = 'huevos_hora' AND $__timeFilter(ts) GROUP BY 1 ORDER BY 1"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "none",
+     "custom": {
+      "lineWidth": 2,
+      "fillOpacity": 8,
+      "spanNulls": 600000,
+      "showPoints": "never",
+      "thresholdsStyle": {
+       "mode": "off"
+      },
+      "stacking": {
+       "mode": "none"
+      }
+     },
+     "color": {
+      "mode": "palette-classic"
+     }
+    },
+    "overrides": [
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "Huevos por hora"
+      },
+      "properties": [
+       {
+        "id": "color",
+        "value": {
+         "mode": "fixed",
+         "fixedColor": "#F4B23E"
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "options": {
+    "legend": {
+     "displayMode": "table",
+     "placement": "bottom",
+     "calcs": [
+      "mean",
+      "min",
+      "max",
+      "lastNotNull"
+     ]
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "none"
+    }
+   }
+  },
+  {
+   "type": "timeseries",
+   "title": "Huevos acumulados del día",
+   "id": 25,
+   "datasource": {
+    "type": "grafana-postgresql-datasource",
+    "uid": "granja-bd"
+   },
+   "description": "",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 8,
+    "y": 41
+   },
+   "targets": [
+    {
+     "datasource": {
+      "type": "grafana-postgresql-datasource",
+      "uid": "granja-bd"
+     },
+     "refId": "A",
+     "rawQuery": true,
+     "editorMode": "code",
+     "format": "time_series",
+     "rawSql": "SELECT $__timeGroupAlias(ts, $__interval), avg(valor) AS \"Huevos del día\" FROM lecturas WHERE dispositivo = 'contador-huevos' AND variable = 'huevos_dia' AND $__timeFilter(ts) GROUP BY 1 ORDER BY 1"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "none",
+     "custom": {
+      "lineWidth": 2,
+      "fillOpacity": 8,
+      "spanNulls": 600000,
+      "showPoints": "never",
+      "thresholdsStyle": {
+       "mode": "off"
+      },
+      "stacking": {
+       "mode": "none"
+      }
+     },
+     "color": {
+      "mode": "palette-classic"
+     }
+    },
+    "overrides": [
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "Huevos del día"
+      },
+      "properties": [
+       {
+        "id": "color",
+        "value": {
+         "mode": "fixed",
+         "fixedColor": "#F4B23E"
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "options": {
+    "legend": {
+     "displayMode": "table",
+     "placement": "bottom",
+     "calcs": [
+      "mean",
+      "min",
+      "max",
+      "lastNotNull"
+     ]
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "none"
+    }
+   }
+  },
+  {
+   "type": "timeseries",
+   "title": "Postura estimada",
+   "id": 26,
+   "datasource": {
+    "type": "grafana-postgresql-datasource",
+    "uid": "granja-bd"
+   },
+   "description": "",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 16,
+    "y": 41
+   },
+   "targets": [
+    {
+     "datasource": {
+      "type": "grafana-postgresql-datasource",
+      "uid": "granja-bd"
+     },
+     "refId": "A",
+     "rawQuery": true,
+     "editorMode": "code",
+     "format": "time_series",
+     "rawSql": "SELECT $__timeGroupAlias(ts, $__interval), avg(valor) AS \"Postura (%)\" FROM lecturas WHERE dispositivo = 'contador-huevos' AND variable = 'postura' AND $__timeFilter(ts) GROUP BY 1 ORDER BY 1"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "percent",
+     "custom": {
+      "lineWidth": 2,
+      "fillOpacity": 8,
+      "spanNulls": 600000,
+      "showPoints": "never",
+      "thresholdsStyle": {
+       "mode": "dashed"
+      },
+      "stacking": {
+       "mode": "none"
+      }
+     },
+     "color": {
+      "mode": "palette-classic"
+     },
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "#B3261E",
+        "value": null
+       },
+       {
+        "color": "#1E5B43",
+        "value": 85
+       }
+      ]
+     }
+    },
+    "overrides": [
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "Postura (%)"
+      },
+      "properties": [
+       {
+        "id": "color",
+        "value": {
+         "mode": "fixed",
+         "fixedColor": "#1E5B43"
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "options": {
+    "legend": {
+     "displayMode": "table",
+     "placement": "bottom",
+     "calcs": [
+      "mean",
+      "min",
+      "max",
+      "lastNotNull"
+     ]
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "none"
+    }
+   }
+  },
+  {
+   "type": "row",
+   "title": "Clima: dos APIs y el dataset del año pasado",
+   "id": 27,
+   "collapsed": false,
+   "gridPos": {
+    "h": 1,
+    "w": 24,
+    "x": 0,
+    "y": 49
+   },
+   "panels": []
+  },
+  {
+   "type": "timeseries",
+   "title": "Temperatura exterior por fuente",
+   "id": 28,
+   "datasource": {
+    "type": "grafana-postgresql-datasource",
+    "uid": "granja-bd"
+   },
+   "description": "",
+   "gridPos": {
+    "h": 9,
+    "w": 12,
+    "x": 0,
+    "y": 50
+   },
+   "targets": [
+    {
+     "datasource": {
+      "type": "grafana-postgresql-datasource",
+      "uid": "granja-bd"
+     },
+     "refId": "A",
+     "rawQuery": true,
+     "editorMode": "code",
+     "format": "time_series",
+     "rawSql": "SELECT $__timeGroupAlias(ts, $__interval), avg(valor) AS \"Open-Meteo\" FROM lecturas WHERE dispositivo = 'clima-openmeteo' AND variable = 'temperatura' AND $__timeFilter(ts) GROUP BY 1 ORDER BY 1"
+    },
+    {
+     "datasource": {
+      "type": "grafana-postgresql-datasource",
+      "uid": "granja-bd"
+     },
+     "refId": "B",
+     "rawQuery": true,
+     "editorMode": "code",
+     "format": "time_series",
+     "rawSql": "SELECT $__timeGroupAlias(ts, $__interval), avg(valor) AS \"Azure Maps\" FROM lecturas WHERE dispositivo = 'clima-azure-maps' AND variable = 'temperatura' AND $__timeFilter(ts) GROUP BY 1 ORDER BY 1"
+    },
+    {
+     "datasource": {
+      "type": "grafana-postgresql-datasource",
+      "uid": "granja-bd"
+     },
+     "refId": "C",
+     "rawQuery": true,
+     "editorMode": "code",
+     "format": "time_series",
+     "rawSql": "SELECT $__timeGroupAlias(ts, $__interval), avg(valor) AS \"ERA5 mismo día de 2025\" FROM lecturas WHERE dispositivo = 'historico-era5' AND variable = 'temperatura' AND $__timeFilter(ts) GROUP BY 1 ORDER BY 1"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "celsius",
+     "custom": {
+      "lineWidth": 2,
+      "fillOpacity": 8,
+      "spanNulls": 600000,
+      "showPoints": "never",
+      "thresholdsStyle": {
+       "mode": "off"
+      },
+      "stacking": {
+       "mode": "none"
+      }
+     },
+     "color": {
+      "mode": "palette-classic"
+     }
+    },
+    "overrides": [
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "Open-Meteo"
+      },
+      "properties": [
+       {
+        "id": "color",
+        "value": {
+         "mode": "fixed",
+         "fixedColor": "#3A6EA5"
+        }
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "Azure Maps"
+      },
+      "properties": [
+       {
+        "id": "color",
+        "value": {
+         "mode": "fixed",
+         "fixedColor": "#1E5B43"
+        }
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "ERA5 mismo día de 2025"
+      },
+      "properties": [
+       {
+        "id": "color",
+        "value": {
+         "mode": "fixed",
+         "fixedColor": "#8A8F8C"
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "options": {
+    "legend": {
+     "displayMode": "table",
+     "placement": "bottom",
+     "calcs": [
+      "mean",
+      "min",
+      "max",
+      "lastNotNull"
+     ]
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "none"
+    }
+   }
+  },
+  {
+   "type": "timeseries",
+   "title": "Radiación solar",
+   "id": 29,
+   "datasource": {
+    "type": "grafana-postgresql-datasource",
+    "uid": "granja-bd"
+   },
+   "description": "",
+   "gridPos": {
+    "h": 9,
+    "w": 6,
+    "x": 12,
+    "y": 50
+   },
+   "targets": [
+    {
+     "datasource": {
+      "type": "grafana-postgresql-datasource",
+      "uid": "granja-bd"
+     },
+     "refId": "A",
+     "rawQuery": true,
+     "editorMode": "code",
+     "format": "time_series",
+     "rawSql": "SELECT $__timeGroupAlias(ts, $__interval), avg(valor) AS \"Open-Meteo\" FROM lecturas WHERE dispositivo = 'clima-openmeteo' AND variable = 'radiacion' AND $__timeFilter(ts) GROUP BY 1 ORDER BY 1"
+    },
+    {
+     "datasource": {
+      "type": "grafana-postgresql-datasource",
+      "uid": "granja-bd"
+     },
+     "refId": "B",
+     "rawQuery": true,
+     "editorMode": "code",
+     "format": "time_series",
+     "rawSql": "SELECT $__timeGroupAlias(ts, $__interval), avg(valor) AS \"ERA5 2025\" FROM lecturas WHERE dispositivo = 'historico-era5' AND variable = 'radiacion' AND $__timeFilter(ts) GROUP BY 1 ORDER BY 1"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "none",
+     "custom": {
+      "lineWidth": 2,
+      "fillOpacity": 8,
+      "spanNulls": 600000,
+      "showPoints": "never",
+      "thresholdsStyle": {
+       "mode": "off"
+      },
+      "stacking": {
+       "mode": "none"
+      }
+     },
+     "color": {
+      "mode": "palette-classic"
+     }
+    },
+    "overrides": [
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "Open-Meteo"
+      },
+      "properties": [
+       {
+        "id": "color",
+        "value": {
+         "mode": "fixed",
+         "fixedColor": "#F4B23E"
+        }
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "ERA5 2025"
+      },
+      "properties": [
+       {
+        "id": "color",
+        "value": {
+         "mode": "fixed",
+         "fixedColor": "#8A8F8C"
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "options": {
+    "legend": {
+     "displayMode": "table",
+     "placement": "bottom",
+     "calcs": [
+      "mean",
+      "min",
+      "max",
+      "lastNotNull"
+     ]
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "none"
+    }
+   }
+  },
+  {
+   "type": "timeseries",
+   "title": "Lluvia",
+   "id": 30,
+   "datasource": {
+    "type": "grafana-postgresql-datasource",
+    "uid": "granja-bd"
+   },
+   "description": "",
+   "gridPos": {
+    "h": 9,
+    "w": 6,
+    "x": 18,
+    "y": 50
+   },
+   "targets": [
+    {
+     "datasource": {
+      "type": "grafana-postgresql-datasource",
+      "uid": "granja-bd"
+     },
+     "refId": "A",
+     "rawQuery": true,
+     "editorMode": "code",
+     "format": "time_series",
+     "rawSql": "SELECT $__timeGroupAlias(ts, $__interval), avg(valor) AS \"Open-Meteo (mm)\" FROM lecturas WHERE dispositivo = 'clima-openmeteo' AND variable = 'lluvia' AND $__timeFilter(ts) GROUP BY 1 ORDER BY 1"
+    },
+    {
+     "datasource": {
+      "type": "grafana-postgresql-datasource",
+      "uid": "granja-bd"
+     },
+     "refId": "B",
+     "rawQuery": true,
+     "editorMode": "code",
+     "format": "time_series",
+     "rawSql": "SELECT $__timeGroupAlias(ts, $__interval), avg(valor) AS \"ERA5 2025 (mm)\" FROM lecturas WHERE dispositivo = 'historico-era5' AND variable = 'lluvia' AND $__timeFilter(ts) GROUP BY 1 ORDER BY 1"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "none",
+     "custom": {
+      "lineWidth": 2,
+      "fillOpacity": 8,
+      "spanNulls": 600000,
+      "showPoints": "never",
+      "thresholdsStyle": {
+       "mode": "off"
+      },
+      "stacking": {
+       "mode": "none"
+      }
+     },
+     "color": {
+      "mode": "palette-classic"
+     }
+    },
+    "overrides": [
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "Open-Meteo (mm)"
+      },
+      "properties": [
+       {
+        "id": "color",
+        "value": {
+         "mode": "fixed",
+         "fixedColor": "#3A6EA5"
+        }
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "ERA5 2025 (mm)"
+      },
+      "properties": [
+       {
+        "id": "color",
+        "value": {
+         "mode": "fixed",
+         "fixedColor": "#8A8F8C"
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "options": {
+    "legend": {
+     "displayMode": "table",
+     "placement": "bottom",
+     "calcs": [
+      "mean",
+      "min",
+      "max",
+      "lastNotNull"
+     ]
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "none"
+    }
+   }
+  },
+  {
+   "type": "row",
+   "title": "Dispositivos reales",
+   "id": 31,
+   "collapsed": false,
+   "gridPos": {
+    "h": 1,
+    "w": 24,
+    "x": 0,
+    "y": 59
+   },
+   "panels": []
+  },
+  {
+   "type": "timeseries",
+   "title": "Latencia de la pasarela a la nube",
+   "id": 32,
+   "datasource": {
+    "type": "grafana-postgresql-datasource",
+    "uid": "granja-bd"
+   },
+   "description": "",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 0,
+    "y": 60
+   },
+   "targets": [
+    {
+     "datasource": {
+      "type": "grafana-postgresql-datasource",
+      "uid": "granja-bd"
+     },
+     "refId": "A",
+     "rawQuery": true,
+     "editorMode": "code",
+     "format": "time_series",
+     "rawSql": "SELECT $__timeGroupAlias(ts, $__interval), avg(valor) AS \"Latencia (ms)\" FROM lecturas WHERE dispositivo = 'pasarela-finca' AND variable = 'latencia' AND $__timeFilter(ts) GROUP BY 1 ORDER BY 1"
+    },
+    {
+     "datasource": {
+      "type": "grafana-postgresql-datasource",
+      "uid": "granja-bd"
+     },
+     "refId": "B",
+     "rawQuery": true,
+     "editorMode": "code",
+     "format": "time_series",
+     "rawSql": "SELECT $__timeGroupAlias(ts, $__interval), min(valor) AS \"Mínimo latencia (ms)\" FROM lecturas WHERE dispositivo = 'pasarela-finca' AND variable = 'latencia' AND $__timeFilter(ts) GROUP BY 1 ORDER BY 1"
+    },
+    {
+     "datasource": {
+      "type": "grafana-postgresql-datasource",
+      "uid": "granja-bd"
+     },
+     "refId": "C",
+     "rawQuery": true,
+     "editorMode": "code",
+     "format": "time_series",
+     "rawSql": "SELECT $__timeGroupAlias(ts, $__interval), max(valor) AS \"Máximo latencia (ms)\" FROM lecturas WHERE dispositivo = 'pasarela-finca' AND variable = 'latencia' AND $__timeFilter(ts) GROUP BY 1 ORDER BY 1"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "ms",
+     "custom": {
+      "lineWidth": 2,
+      "fillOpacity": 8,
+      "spanNulls": 600000,
+      "showPoints": "never",
+      "thresholdsStyle": {
+       "mode": "dashed"
+      },
+      "stacking": {
+       "mode": "none"
+      }
+     },
+     "color": {
+      "mode": "palette-classic"
+     },
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "#1E5B43",
+        "value": null
+       },
+       {
+        "color": "#F4B23E",
+        "value": 800
+       }
+      ]
+     }
+    },
+    "overrides": [
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "Latencia (ms)"
+      },
+      "properties": [
+       {
+        "id": "color",
+        "value": {
+         "mode": "fixed",
+         "fixedColor": "#1E5B43"
+        }
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "Mínimo latencia (ms)"
+      },
+      "properties": [
+       {
+        "id": "custom.lineStyle",
+        "value": {
+         "fill": "dash",
+         "dash": [
+          4,
+          4
+         ]
+        }
+       },
+       {
+        "id": "custom.lineWidth",
+        "value": 1
+       },
+       {
+        "id": "color",
+        "value": {
+         "mode": "fixed",
+         "fixedColor": "#8A8F8C"
+        }
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "Máximo latencia (ms)"
+      },
+      "properties": [
+       {
+        "id": "custom.lineStyle",
+        "value": {
+         "fill": "dash",
+         "dash": [
+          4,
+          4
+         ]
+        }
+       },
+       {
+        "id": "custom.lineWidth",
+        "value": 1
+       },
+       {
+        "id": "color",
+        "value": {
+         "mode": "fixed",
+         "fixedColor": "#8A8F8C"
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "options": {
+    "legend": {
+     "displayMode": "table",
+     "placement": "bottom",
+     "calcs": [
+      "mean",
+      "min",
+      "max",
+      "lastNotNull"
+     ]
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "none"
+    }
+   }
+  },
+  {
+   "type": "timeseries",
+   "title": "CPU y memoria de la pasarela",
+   "id": 33,
+   "datasource": {
+    "type": "grafana-postgresql-datasource",
+    "uid": "granja-bd"
+   },
+   "description": "",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 8,
+    "y": 60
+   },
+   "targets": [
+    {
+     "datasource": {
+      "type": "grafana-postgresql-datasource",
+      "uid": "granja-bd"
+     },
+     "refId": "A",
+     "rawQuery": true,
+     "editorMode": "code",
+     "format": "time_series",
+     "rawSql": "SELECT $__timeGroupAlias(ts, $__interval), avg(valor) AS \"CPU (%)\" FROM lecturas WHERE dispositivo = 'pasarela-finca' AND variable = 'cpu' AND $__timeFilter(ts) GROUP BY 1 ORDER BY 1"
+    },
+    {
+     "datasource": {
+      "type": "grafana-postgresql-datasource",
+      "uid": "granja-bd"
+     },
+     "refId": "B",
+     "rawQuery": true,
+     "editorMode": "code",
+     "format": "time_series",
+     "rawSql": "SELECT $__timeGroupAlias(ts, $__interval), avg(valor) AS \"Memoria (%)\" FROM lecturas WHERE dispositivo = 'pasarela-finca' AND variable = 'memoria' AND $__timeFilter(ts) GROUP BY 1 ORDER BY 1"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "percent",
+     "custom": {
+      "lineWidth": 2,
+      "fillOpacity": 8,
+      "spanNulls": 600000,
+      "showPoints": "never",
+      "thresholdsStyle": {
+       "mode": "off"
+      },
+      "stacking": {
+       "mode": "none"
+      }
+     },
+     "color": {
+      "mode": "palette-classic"
+     }
+    },
+    "overrides": [
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "CPU (%)"
+      },
+      "properties": [
+       {
+        "id": "color",
+        "value": {
+         "mode": "fixed",
+         "fixedColor": "#F4B23E"
+        }
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "Memoria (%)"
+      },
+      "properties": [
+       {
+        "id": "color",
+        "value": {
+         "mode": "fixed",
+         "fixedColor": "#3A6EA5"
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "options": {
+    "legend": {
+     "displayMode": "table",
+     "placement": "bottom",
+     "calcs": [
+      "mean",
+      "min",
+      "max",
+      "lastNotNull"
+     ]
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "none"
+    }
+   }
+  },
+  {
+   "type": "timeseries",
+   "title": "ESP32 galpón 2",
+   "id": 34,
+   "datasource": {
+    "type": "grafana-postgresql-datasource",
+    "uid": "granja-bd"
+   },
+   "description": "",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 16,
+    "y": 60
+   },
+   "targets": [
+    {
+     "datasource": {
+      "type": "grafana-postgresql-datasource",
+      "uid": "granja-bd"
+     },
+     "refId": "A",
+     "rawQuery": true,
+     "editorMode": "code",
+     "format": "time_series",
+     "rawSql": "SELECT $__timeGroupAlias(ts, $__interval), avg(valor) AS \"Temperatura (°C)\" FROM lecturas WHERE dispositivo = 'galpon2-ambiente' AND variable = 'temperatura' AND $__timeFilter(ts) GROUP BY 1 ORDER BY 1"
+    },
+    {
+     "datasource": {
+      "type": "grafana-postgresql-datasource",
+      "uid": "granja-bd"
+     },
+     "refId": "B",
+     "rawQuery": true,
+     "editorMode": "code",
+     "format": "time_series",
+     "rawSql": "SELECT $__timeGroupAlias(ts, $__interval), avg(valor) AS \"Humedad (%)\" FROM lecturas WHERE dispositivo = 'galpon2-ambiente' AND variable = 'humedad' AND $__timeFilter(ts) GROUP BY 1 ORDER BY 1"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "none",
+     "custom": {
+      "lineWidth": 2,
+      "fillOpacity": 8,
+      "spanNulls": 600000,
+      "showPoints": "never",
+      "thresholdsStyle": {
+       "mode": "off"
+      },
+      "stacking": {
+       "mode": "none"
+      }
+     },
+     "color": {
+      "mode": "palette-classic"
+     }
+    },
+    "overrides": [
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "Temperatura (°C)"
+      },
+      "properties": [
+       {
+        "id": "color",
+        "value": {
+         "mode": "fixed",
+         "fixedColor": "#B3261E"
+        }
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "Humedad (%)"
+      },
+      "properties": [
+       {
+        "id": "color",
+        "value": {
+         "mode": "fixed",
+         "fixedColor": "#3A6EA5"
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "options": {
+    "legend": {
+     "displayMode": "table",
+     "placement": "bottom",
+     "calcs": [
+      "mean",
+      "min",
+      "max",
+      "lastNotNull"
+     ]
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "none"
+    }
+   }
+  },
+  {
+   "type": "row",
+   "title": "Explorar cualquier variable",
+   "id": 35,
+   "collapsed": false,
+   "gridPos": {
+    "h": 1,
+    "w": 24,
+    "x": 0,
+    "y": 68
+   },
+   "panels": []
+  },
+  {
+   "type": "timeseries",
+   "title": "$dispositivo · $variable",
+   "id": 36,
+   "datasource": {
+    "type": "grafana-postgresql-datasource",
+    "uid": "granja-bd"
+   },
+   "gridPos": {
+    "h": 9,
+    "w": 24,
+    "x": 0,
+    "y": 69
+   },
+   "targets": [
+    {
+     "datasource": {
+      "type": "grafana-postgresql-datasource",
+      "uid": "granja-bd"
+     },
+     "refId": "A",
+     "rawQuery": true,
+     "editorMode": "code",
+     "format": "time_series",
+     "rawSql": "SELECT $__timeGroupAlias(ts, $__interval), avg(valor) AS \"Promedio\", min(valor) AS \"Mínimo\", max(valor) AS \"Máximo\" FROM lecturas WHERE dispositivo = '$dispositivo' AND variable = '$variable' AND $__timeFilter(ts) GROUP BY 1 ORDER BY 1"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "custom": {
+      "lineWidth": 2,
+      "fillOpacity": 5,
+      "showPoints": "never"
+     }
+    },
+    "overrides": [
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "Mínimo"
+      },
+      "properties": [
+       {
+        "id": "custom.fillBelowTo",
+        "value": "Máximo"
+       },
+       {
+        "id": "color",
+        "value": {
+         "mode": "fixed",
+         "fixedColor": "#8A8F8C"
+        }
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "Máximo"
+      },
+      "properties": [
+       {
+        "id": "color",
+        "value": {
+         "mode": "fixed",
+         "fixedColor": "#8A8F8C"
+        }
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "Promedio"
+      },
+      "properties": [
+       {
+        "id": "color",
+        "value": {
+         "mode": "fixed",
+         "fixedColor": "#1E5B43"
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "options": {
+    "legend": {
+     "displayMode": "table",
+     "placement": "bottom",
+     "calcs": [
+      "mean",
+      "min",
+      "max"
+     ]
+    },
+    "tooltip": {
+     "mode": "multi"
+    }
+   }
+  },
+  {
+   "type": "row",
+   "title": "Estadísticas, alertas y órdenes",
+   "id": 37,
+   "collapsed": false,
+   "gridPos": {
+    "h": 1,
+    "w": 24,
+    "x": 0,
+    "y": 78
+   },
+   "panels": []
+  },
+  {
+   "type": "table",
+   "title": "Promedio, mínimo y máximo del periodo",
+   "id": 38,
+   "datasource": {
+    "type": "grafana-postgresql-datasource",
+    "uid": "granja-bd"
+   },
+   "gridPos": {
+    "h": 12,
+    "w": 12,
+    "x": 0,
+    "y": 79
+   },
+   "description": "Cambia con el rango de tiempo de arriba.",
+   "targets": [
+    {
+     "datasource": {
+      "type": "grafana-postgresql-datasource",
+      "uid": "granja-bd"
+     },
+     "refId": "A",
+     "rawQuery": true,
+     "editorMode": "code",
+     "format": "table",
+     "rawSql": "SELECT d.nombre AS \"Dispositivo\", l.variable AS \"Variable\", round(avg(l.valor)::numeric, 2) AS \"Promedio\", round(min(l.valor)::numeric, 2) AS \"Mínimo\", round(max(l.valor)::numeric, 2) AS \"Máximo\", count(*) AS \"Lecturas\" FROM lecturas l JOIN dispositivos d ON d.id = l.dispositivo WHERE $__timeFilter(l.ts) GROUP BY 1, 2 ORDER BY 1, 2"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "custom": {
+      "align": "auto",
+      "filterable": true
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "showHeader": true,
+    "cellHeight": "sm"
+   }
+  },
+  {
+   "type": "table",
+   "title": "Alertas",
+   "id": 39,
+   "datasource": {
+    "type": "grafana-postgresql-datasource",
+    "uid": "granja-bd"
+   },
+   "gridPos": {
+    "h": 12,
+    "w": 12,
+    "x": 12,
+    "y": 79
+   },
+   "description": "",
+   "targets": [
+    {
+     "datasource": {
+      "type": "grafana-postgresql-datasource",
+      "uid": "granja-bd"
+     },
+     "refId": "A",
+     "rawQuery": true,
+     "editorMode": "code",
+     "format": "table",
+     "rawSql": "SELECT inicio AS \"Inicio\", fin AS \"Fin\", dispositivo AS \"Dispositivo\", nivel AS \"Nivel\", mensaje AS \"Mensaje\", round(valor_extremo::numeric, 2) AS \"Valor extremo\" FROM alertas WHERE $__timeFilter(inicio) ORDER BY inicio DESC"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "custom": {
+      "align": "auto",
+      "filterable": true
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "showHeader": true,
+    "cellHeight": "sm"
+   }
+  },
+  {
+   "type": "table",
+   "title": "Dispositivos",
+   "id": 40,
+   "datasource": {
+    "type": "grafana-postgresql-datasource",
+    "uid": "granja-bd"
+   },
+   "gridPos": {
+    "h": 10,
+    "w": 12,
+    "x": 0,
+    "y": 91
+   },
+   "description": "",
+   "targets": [
+    {
+     "datasource": {
+      "type": "grafana-postgresql-datasource",
+      "uid": "granja-bd"
+     },
+     "refId": "A",
+     "rawQuery": true,
+     "editorMode": "code",
+     "format": "table",
+     "rawSql": "SELECT nombre AS \"Dispositivo\", categoria AS \"Tipo\", protocolo AS \"Protocolo\", CASE WHEN en_linea THEN 'En línea' ELSE 'Desconectado' END AS \"Estado\", ultimo_contacto AS \"Último dato\" FROM dispositivos ORDER BY categoria, nombre"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "custom": {
+      "align": "auto",
+      "filterable": true
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "showHeader": true,
+    "cellHeight": "sm"
+   }
+  },
+  {
+   "type": "table",
+   "title": "Órdenes enviadas a los dispositivos (retroceso)",
+   "id": 41,
+   "datasource": {
+    "type": "grafana-postgresql-datasource",
+    "uid": "granja-bd"
+   },
+   "gridPos": {
+    "h": 10,
+    "w": 12,
+    "x": 12,
+    "y": 91
+   },
+   "description": "",
+   "targets": [
+    {
+     "datasource": {
+      "type": "grafana-postgresql-datasource",
+      "uid": "granja-bd"
+     },
+     "refId": "A",
+     "rawQuery": true,
+     "editorMode": "code",
+     "format": "table",
+     "rawSql": "SELECT ts AS \"Hora\", dispositivo AS \"Dispositivo\", accion AS \"Acción\", parametros AS \"Parámetros\", origen AS \"Origen\", estado AS \"Estado\", respuesta AS \"Respuesta\" FROM comandos WHERE $__timeFilter(ts) ORDER BY ts DESC"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "custom": {
+      "align": "auto",
+      "filterable": true
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "showHeader": true,
+    "cellHeight": "sm"
+   }
+  }
+ ]
+}

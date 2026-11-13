@@ -1,5 +1,5 @@
 $Reg = Join-Path $PSScriptRoot 'registros'
-foreach ($n in 'dispositivos', 'plataforma', 'broker') {
+foreach ($n in 'pasarela', 'dispositivos', 'plataforma', 'broker') {
     $f = Join-Path $Reg "$n.pid"
     if (Test-Path $f) {
         $id = [int](Get-Content $f)
