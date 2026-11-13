@@ -34,9 +34,9 @@ function Nube {
     return $null
 }
 
-function Ssh([string]$Comando) {
+function Remoto([string]$Comando) {
     $n = Nube
-    Ejecutar 'ssh' @('-i', $Llave, '-o', 'StrictHostKeyChecking=accept-new', "$Usuario@$($n.dominio)", $Comando)
+    Ejecutar 'ssh.exe' @('-i', $Llave, '-o', 'StrictHostKeyChecking=accept-new', "$Usuario@$($n.dominio)", $Comando)
 }
 
 function Guardar([string]$Nombre, [scriptblock]$Comandos) {

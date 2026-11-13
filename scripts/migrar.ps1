@@ -3,7 +3,7 @@ $n = Nube
 $destino = "$Usuario@$($n.dominio)"
 $python = Join-Path $Raiz '.venv\Scripts\python.exe'
 
-$tunel = Start-Process ssh -ArgumentList @('-i', $Llave, '-N', '-L', '15432:127.0.0.1:5432', $destino) -PassThru -WindowStyle Hidden
+$tunel = Start-Process ssh.exe -ArgumentList @('-i', $Llave, '-N', '-L', '15432:127.0.0.1:5432', $destino) -PassThru -WindowStyle Hidden
 Start-Sleep 5
 try {
     & (Join-Path $Raiz 'local\detener.ps1')
@@ -13,6 +13,6 @@ try {
     Stop-Process -Id $tunel.Id -ErrorAction SilentlyContinue
 }
 
-Ejecutar scp @('-i', $Llave, '-r', (Join-Path $Raiz 'estado'), "${destino}:~/estado-local")
-Ssh 'cd ~/galpon/nube && docker compose create dispositivos && docker compose cp ~/estado-local/. dispositivos:/app/estado/ && docker compose up -d dispositivos && docker compose restart plataforma'
+Ejecutar scp.exe @('-i', $Llave, '-r', (Join-Path $Raiz 'estado'), "${destino}:~/estado-local")
+Remoto 'cd ~/galpon/nube && docker compose create dispositivos && docker compose cp ~/estado-local/. dispositivos:/app/estado/ && docker compose up -d dispositivos && docker compose restart plataforma'
 Write-Host 'Datos locales copiados a la nube y dispositivos corriendo allá' -ForegroundColor Green

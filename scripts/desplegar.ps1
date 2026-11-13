@@ -3,12 +3,14 @@ param([switch]$ConDispositivos)
 $n = Nube
 if (-not $n) { throw 'Primero corre scripts\crear_vm.ps1' }
 
+$ErrorActionPreference = 'Continue'
 for ($i = 0; $i -lt 40; $i++) {
-    ssh -i $Llave -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 "$Usuario@$($n.dominio)" 'docker compose version' 2>$null
+    ssh.exe -i $Llave -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 "$Usuario@$($n.dominio)" 'docker compose version' 2>$null
     if ($LASTEXITCODE -eq 0) { break }
     Write-Host 'Esperando a que la VM termine de instalar Docker...'
     Start-Sleep 15
 }
+$ErrorActionPreference = 'Stop'
 
 $temporal = 'D:\Temp\galpon-despliegue'
 New-Item -ItemType Directory -Force $temporal | Out-Null
@@ -33,14 +35,14 @@ $entorno = Join-Path $temporal '.env'
 ) -join "`n" | Set-Content $entorno -NoNewline -Encoding ascii
 
 $destino = "$Usuario@$($n.dominio)"
-Ejecutar scp @('-i', $Llave, $paquete, $entorno, "${destino}:~/")
-Ssh 'rm -rf ~/galpon.nuevo && mkdir -p ~/galpon.nuevo && tar -xzf ~/galpon.tgz -C ~/galpon.nuevo && mkdir -p ~/galpon && cp -r ~/galpon.nuevo/. ~/galpon/ && mv ~/.env ~/galpon/nube/.env && chmod 600 ~/galpon/nube/.env && rm -rf ~/galpon.nuevo ~/galpon.tgz'
+Ejecutar scp.exe @('-i', $Llave, $paquete, $entorno, "${destino}:~/")
+Remoto 'rm -rf ~/galpon.nuevo && mkdir -p ~/galpon.nuevo && tar -xzf ~/galpon.tgz -C ~/galpon.nuevo && mkdir -p ~/galpon && cp -r ~/galpon.nuevo/. ~/galpon/ && mv ~/.env ~/galpon/nube/.env && chmod 600 ~/galpon/nube/.env && rm -rf ~/galpon.nuevo ~/galpon.tgz'
 
 $servicios = 'bd mosquitto plataforma grafana caddy'
 if ($ConDispositivos) { $servicios += ' dispositivos' }
-Ssh "cd ~/galpon/nube && docker compose up -d --build $servicios"
+Remoto "cd ~/galpon/nube && docker compose up -d --build $servicios"
 Remove-Item $entorno
 
 Write-Host "Panel: https://$($n.dominio)" -ForegroundColor Green
 Write-Host "Grafana: https://$($n.dominio)/grafana" -ForegroundColor Green
-Guardar '02-despliegue' { Ssh 'cd ~/galpon/nube && docker compose ps --format "table {{.Service}}\t{{.Image}}\t{{.Status}}\t{{.Ports}}"' }
+Guardar '02-despliegue' { Remoto 'cd ~/galpon/nube && docker compose ps --format "table {{.Service}}\t{{.Image}}\t{{.Status}}\t{{.Ports}}"' }

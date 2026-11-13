@@ -1,0 +1,10 @@
+﻿# 01-vm - 2026-11-12 23:10:33
+
+Nombre     Tamano             Region         IP               Dominio                                                  Estado
+---------  -----------------  -------------  ---------------  -------------------------------------------------------  ----------
+vm-galpon  Standard_B2als_v2  mexicocentral  172.195.107.153  galpon-conectado-jr5qy.mexicocentral.cloudapp.azure.com  VM running
+Regla                  Puertos    Prioridad
+---------------------  ---------  -----------
+default-allow-ssh      22         1000
+open-port-80_443_1883             900
+
