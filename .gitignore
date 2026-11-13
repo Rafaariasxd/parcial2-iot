@@ -9,3 +9,5 @@ local/*.db-*
 .pytest_cache/
 informe/*.docx
 wokwi/*/secrets.h
+informe/graficas/
+informe/*.pdf
