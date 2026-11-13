@@ -45,4 +45,4 @@ Remove-Item $entorno
 
 Write-Host "Panel: https://$($n.dominio)" -ForegroundColor Green
 Write-Host "Grafana: https://$($n.dominio)/grafana" -ForegroundColor Green
-Guardar '02-despliegue' { Remoto 'cd ~/galpon/nube && docker compose ps --format "table {{.Service}}\t{{.Image}}\t{{.Status}}\t{{.Ports}}"' }
+Guardar '02-despliegue' { Remoto 'cd ~/galpon/nube && docker compose ps' }
